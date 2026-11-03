@@ -272,6 +272,8 @@ class entity_dom_fields extends dom_fields {
         for (const field of entity.atributos) { const cell = document.createElement('th'); cell.scope = 'col'; cell.className = entity.config.columnLabels?.[field] || field; cell.textContent = entity_ui.t(cell.className); cell.dataset.column = field; cell.hidden = !entity.columnasamostrar.includes(field); header.append(cell); }
         const actions = document.createElement('th'); actions.className = 'ui_actions'; actions.textContent = entity_ui.t('ui_actions'); header.append(actions);
         const body = table.createTBody();
+        // muestra únicamente las acciones de fila que la entidad permite ejecutar
+        const rowActions = ['EDIT', 'DELETE', 'SHOWCURRENT'].filter(action => !(entity.config.readOnlyActions || []).includes(action));
         for (const row of entity.datos) {
             const tr = body.insertRow();
             for (const field of entity.atributos) {
@@ -280,7 +282,7 @@ class entity_dom_fields extends dom_fields {
                 if (value instanceof Node) cell.append(value); else cell.textContent = value;
             }
             const operations = tr.insertCell();
-            for (const action of ['EDIT', 'DELETE', 'SHOWCURRENT']) {
+            for (const action of rowActions) {
                 const button = document.createElement('button'); button.type = 'button'; button.append(this.crearIcono(action));
                 button.onclick = () => entity['createForm_' + action]({ ...row, _labels: { ...row._labels } }); operations.append(button);
             }

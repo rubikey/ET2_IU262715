@@ -263,8 +263,48 @@ class usuario extends AbstractEntidad {
             note: 'ui_password_edit'
         });
         if (!context) return false;
-        await this.dom.rellenarReferencias(this, context, ['id_rol']);
+        // carga la contraseña solo para esta edición; el input password la muestra enmascarada
+        await Promise.all([
+            this.dom.rellenarReferencias(this, context, ['id_rol']),
+            this.cargarContrasenaEdicion(context)
+        ]);
+        if (context.referenceError) return false;
         return entity_ui.finishForm(this, context);
+    }
+
+    // recupera la clave del registro elegido sin incorporarla a la tabla ni a la caché de referencias
+    async cargarContrasenaEdicion(context) {
+        context.loading++;
+        entity_ui.updateSubmit(context);
+        try {
+            if (!entity_ui.current(this, context)) return false;
+            if (!context.values.dni) throw new Error('ui_form_invalid');
+            const filtros = new FormData();
+            filtros.set('dni', context.values.dni);
+            const respuesta = await this.access_functions.peticionBackGeneral(filtros, 'usuario', 'SEARCH');
+            if (!entity_ui.current(this, context)) return false;
+            if (respuesta.ok !== true && !['RECORDSET_DATOS', 'RECORDSET_VACIO'].includes(respuesta.code)) {
+                throw new Error(respuesta.code || 'ui_error');
+            }
+            if (!Array.isArray(respuesta.resource)) throw new Error('ui_invalid_response');
+            const fila = respuesta.resource.find(registro =>
+                entity_access.scalar(entity_access.find(registro, 'dni'), 'dni') === context.values.dni);
+            const valor = fila && entity_access.find(fila, 'contrasena');
+            if (valor == null) throw new Error('ui_password_unavailable');
+            const contrasena = entity_access.scalar(valor, 'contrasena');
+            if (!contrasena) throw new Error('ui_password_unavailable');
+            this.dom.fillElementValue(this.dom.obtenerCampo('contrasena', context), contrasena);
+            return true;
+        } catch (error) {
+            if (entity_ui.current(this, context)) {
+                context.referenceError = true;
+                this.dom.abrirModalError(error.message);
+            }
+            return false;
+        } finally {
+            context.loading--;
+            if (entity_ui.current(this, context)) entity_ui.updateSubmit(context);
+        }
     }
 
     // SEARCH usuario
