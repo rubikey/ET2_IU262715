@@ -20,16 +20,20 @@ class entity_dom_fields extends dom_fields {
     // rellena un campo existente; si no recibe valor, lo deja vacío
     fillElementValue(elemento, valor) { elemento.value = valor ?? ''; }
     mostrar_error_campo(id, codigo) {
-        const field = document.getElementById(id), span = document.getElementById('span_error_' + id), message = document.getElementById('error_' + id);
-        if (field) { field.setAttribute('aria-invalid', 'true'); field.classList.remove('et2-valid'); field.classList.add('et2-invalid'); }
-        if (span) span.style.display = 'block';
-        if (message) { message.className = codigo; message.textContent = entity_ui.t(codigo); }
+        this.actualizarEstadoCampo(id, true, codigo);
     }
     mostrar_exito_campo(id) {
-        const field = document.getElementById(id), span = document.getElementById('span_error_' + id), message = document.getElementById('error_' + id);
-        if (field) { field.setAttribute('aria-invalid', 'false'); field.classList.remove('et2-invalid'); field.classList.add('et2-valid'); }
-        if (span) span.style.display = 'none';
-        if (message) { message.className = ''; message.textContent = ''; }
+        this.actualizarEstadoCampo(id, false);
+    }
+    // aplica en un único lugar los colores, la accesibilidad y el mensaje de un campo
+    actualizarEstadoCampo(id, invalid, codigo = '') {
+        const field = this.obtenerCampo(id), span = this.obtenerCampo('span_error_' + id), message = this.obtenerCampo('error_' + id);
+        if (field) {
+            field.setAttribute('aria-invalid', String(invalid));
+            field.classList.toggle('et2-invalid', invalid); field.classList.toggle('et2-valid', !invalid);
+        }
+        if (span) span.style.display = invalid ? 'block' : 'none';
+        if (message) { message.className = invalid ? codigo : ''; message.textContent = invalid ? entity_ui.t(codigo) : ''; }
     }
     abrirModalError(codigo) {
         const modal = document.getElementById('error_action_modal'), message = document.getElementById('error_action_msg');
@@ -58,7 +62,7 @@ class entity_dom_fields extends dom_fields {
         const entity = entity_ui.active;
         const context = entity?.formContext;
         for (const field of document.getElementById(idform).elements) {
-            if (!entity_ui.editable(field)) continue;
+            if (!this.esEditable(field)) continue;
             const events = field.tagName === 'INPUT' && field.type !== 'file' ? ['blur', 'input'] : ['blur', 'input', 'change'];
             const validate = () => {
                 if (!entity_ui.current(entity, context)) return;
@@ -135,33 +139,6 @@ class entity_dom_fields extends dom_fields {
         const button = context?.form.querySelector('#submit_button');
         if (button) button.disabled = true;
     }
-    bloquearCampo(context, id, blocked = true) {
-        const field = this.obtenerCampo(id, context);
-        if (field.tagName === 'SELECT' || field.type === 'file') field.disabled = blocked;
-        else field.readOnly = blocked;
-    }
-    observarCampo(context, id, event, callback) {
-        this.obtenerCampo(id, context).addEventListener(event, callback);
-    }
-    esperarSeleccion(context, id, code) {
-        const field = this.obtenerCampo(id, context);
-        field.disabled = true;
-        field.options[0].className = code;
-        field.options[0].textContent = entity_ui.t(code);
-        field.title = entity_ui.t(code);
-        context.unavailable.delete(id);
-    }
-    crearBotonAccion(context, textCode, callback, first = false) {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = textCode;
-        button.textContent = entity_ui.t(textCode);
-        button.onclick = callback;
-        const actions = context.form.querySelector('.et2-form-actions');
-        if (first) actions.prepend(button);
-        else actions.append(button);
-        return button;
-    }
     configurarEnlaceFichero(context, id, base, filename, visible) {
         const link = this.obtenerCampo(id, context);
         link.hidden = !visible;
@@ -189,6 +166,8 @@ class entity_dom_fields extends dom_fields {
     }
     iniciarGestion(entity) {
         document.getElementById('IU_manage_entity').style.display = 'block';
+        document.getElementById('botonADD').hidden = !!entity.config.matrix;
+        document.getElementById('seleccioncolumnas').disabled = false;
         const title = document.getElementById('text_title_page');
         title.className = 'text_titulo_page_' + entity.nombreentidad;
         title.textContent = entity_ui.t(title.className);
@@ -200,7 +179,7 @@ class entity_dom_fields extends dom_fields {
         const note = context.form.querySelector('#et2_form_note');
         if (note && !context.policy.note) {
             note.hidden = context.unavailable.size === 0;
-            note.className = context.unavailable.size ? context.emptyNote || 'ui_no_options' : '';
+            note.className = context.unavailable.size ? 'ui_no_options' : '';
             note.textContent = context.unavailable.size ? entity_ui.t(note.className) : '';
         }
         if (button) button.disabled = !context.ready || context.loading > 0 || context.referenceError || context.unavailable.size > 0;
@@ -298,6 +277,130 @@ class entity_dom_fields extends dom_fields {
         for (const cell of document.querySelectorAll('#IU_manage_table [data-column]')) cell.hidden = !columns.includes(cell.dataset.column);
     }
 
+    // muestra una espera sin presentar relaciones vacías como si fueran datos confirmados
+    mostrarMatrizCargando() {
+        const host = document.getElementById('IU_manage_table');
+        const message = document.createElement('p');
+        message.className = 'ui_loading'; message.textContent = entity_ui.t('ui_loading');
+        host.replaceChildren(message);
+        const columns = document.getElementById('seleccioncolumnas');
+        columns.replaceChildren(); columns.disabled = true;
+    }
+    mostrarMatrizError(entity) {
+        const columns = document.getElementById('seleccioncolumnas'); columns.replaceChildren(); columns.disabled = true;
+        const host = document.getElementById('IU_manage_table');
+        const message = document.createElement('p');
+        message.className = 'ui_matrix_load_error'; message.textContent = entity_ui.t(message.className);
+        const retry = document.createElement('button');
+        retry.type = 'button'; retry.className = 'ui_matrix_reload'; retry.textContent = entity_ui.t(retry.className);
+        retry.onclick = () => entity_ui.refreshMatrix(entity);
+        host.replaceChildren(message, retry);
+    }
+    esMatrizActual(matrix) {
+        return !!matrix && document.getElementById('et2_matrix') === matrix.root;
+    }
+    // construye filtros y selector de rol; cada casilla representa una relación
+    mostrarMatriz(entity, matrix) {
+        const host = document.getElementById('IU_manage_table');
+        const root = document.createElement('div'); root.id = 'et2_matrix'; matrix.root = root;
+        const help = document.createElement('p');
+        help.className = 'ui_matrix_help'; help.textContent = entity_ui.t(help.className); root.append(help);
+        const toolbar = document.createElement('div'); toolbar.className = 'et2-matrix-toolbar'; root.append(toolbar);
+        matrix.controls = [];
+        if (entity.config.matrix.role) {
+            const label = document.createElement('label'); label.htmlFor = 'et2_matrix_role';
+            const text = document.createElement('span'); text.className = 'ui_role'; text.textContent = entity_ui.t(text.className);
+            const select = document.createElement('select'); select.id = 'et2_matrix_role';
+            select.add(new Option(entity_ui.t('ui_matrix_choose_role'), '')); select.options[0].className = 'ui_matrix_choose_role';
+            for (const row of matrix.roles) select.add(new Option(row.rol_name || row.id_rol, row.id_rol));
+            select.value = matrix.selectedRole;
+            select.onchange = () => entity_ui.updateMatrixView(entity, matrix, 'selectedRole', select.value);
+            label.append(text, select); toolbar.append(label); matrix.controls.push(select); matrix.roleControl = select;
+        }
+        for (const [field, id, code] of [
+            ['functionFilter', 'et2_matrix_function_filter', 'ui_matrix_filter_functionality'],
+            ['actionFilter', 'et2_matrix_action_filter', 'ui_matrix_filter_action']
+        ]) {
+            const label = document.createElement('label'); label.htmlFor = id;
+            const text = document.createElement('span'); text.className = code; text.textContent = entity_ui.t(code);
+            const input = document.createElement('input'); input.id = id; input.type = 'search'; input.value = matrix[field];
+            input.oninput = () => entity_ui.updateMatrixView(entity, matrix, field, input.value);
+            label.append(text, input); toolbar.append(label); matrix.controls.push(input);
+            if (field === 'functionFilter') matrix.filterControl = input;
+        }
+        const reload = document.createElement('button'); reload.type = 'button';
+        reload.className = 'ui_matrix_reload'; reload.textContent = entity_ui.t(reload.className);
+        reload.onclick = () => entity_ui.refreshMatrix(entity); toolbar.append(reload); matrix.controls.push(reload);
+        matrix.summary = document.createElement('p'); matrix.summary.setAttribute('role', 'status'); root.append(matrix.summary);
+        matrix.view = document.createElement('div'); matrix.view.className = 'et2-matrix-scroll'; root.append(matrix.view);
+        const columns = document.getElementById('seleccioncolumnas'); columns.replaceChildren();
+        for (const action of matrix.actions) columns.add(new Option(action.nombre_accion || action.id_accion, action.id_accion, false, matrix.columns.has(action.id_accion)));
+        columns.onchange = () => entity_ui.updateMatrixView(entity, matrix, 'columns', Array.from(columns.selectedOptions, option => option.value));
+        matrix.columnControl = columns;
+        host.replaceChildren(root);
+        this.actualizarMatriz(entity, matrix);
+        this.bloquearMatriz(matrix, false);
+        if (matrix.focusKey) matrix.cells.get(matrix.focusKey)?.focus();
+    }
+    // actualiza únicamente la cuadrícula para conservar el foco y el texto de los filtros
+    actualizarMatriz(entity, matrix) {
+        const lower = value => String(value || '').toLocaleLowerCase();
+        const functions = matrix.functionalities.filter(row => lower(row.nombre_funcionalidad).includes(lower(matrix.functionFilter)));
+        const actions = matrix.actions.filter(row => matrix.columns.has(row.id_accion) && lower(row.nombre_accion).includes(lower(matrix.actionFilter)));
+        const table = document.createElement('table'); table.className = 'et2-table et2-matrix-table';
+        const caption = table.createCaption(); caption.className = 'ui_matrix_caption'; caption.textContent = entity_ui.t(caption.className);
+        const header = table.createTHead().insertRow();
+        const corner = document.createElement('th'); corner.scope = 'col'; corner.className = 'ui_functionality'; corner.textContent = entity_ui.t(corner.className); header.append(corner);
+        for (const action of actions) { const th = document.createElement('th'); th.scope = 'col'; th.textContent = action.nombre_accion || action.id_accion; header.append(th); }
+        const body = table.createTBody(); matrix.cells = new Map(); let assigned = 0;
+        for (const functional of functions) {
+            const row = body.insertRow(); const title = document.createElement('th'); title.scope = 'row';
+            title.textContent = functional.nombre_funcionalidad || functional.id_funcionalidad; row.append(title);
+            for (const action of actions) {
+                const cell = row.insertCell();
+                const relation = { id_funcionalidad: functional.id_funcionalidad, id_accion: action.id_accion };
+                if (entity.config.matrix.role) relation.id_rol = matrix.selectedRole;
+                const key = entity_ui.matrixKey(entity, relation);
+                const checked = matrix.relations.has(key);
+                const allowed = !entity.config.matrix.role || matrix.pairs.has(JSON.stringify([relation.id_funcionalidad, relation.id_accion]));
+                if (!allowed && !checked) {
+                    const unavailable = document.createElement('span'); unavailable.textContent = '—'; unavailable.title = entity_ui.t('ui_matrix_unavailable');
+                    unavailable.setAttribute('aria-label', unavailable.title); cell.append(unavailable); continue;
+                }
+                const input = document.createElement('input'); input.type = 'checkbox'; input.checked = checked;
+                input.dataset.matrixKey = key;
+                input.dataset.matrixUnavailable = String(!!entity.config.matrix.role && !matrix.selectedRole);
+                input.disabled = matrix.pending || input.dataset.matrixUnavailable === 'true';
+                const role = matrix.roles.find(row => row.id_rol === matrix.selectedRole);
+                input.setAttribute('aria-label', [role?.rol_name, title.textContent, action.nombre_accion || action.id_accion].filter(Boolean).join(' · '));
+                input.title = entity_ui.t(!allowed ? 'ui_matrix_remove_only' : input.dataset.matrixUnavailable === 'true' ? 'ui_matrix_choose_role' : checked ? 'ui_matrix_unassign' : 'ui_matrix_assign');
+                input.onchange = () => entity[input.checked ? 'ADD' : 'DELETE'](matrix, relation);
+                matrix.cells.set(key, input); cell.append(input); if (checked) assigned++;
+            }
+        }
+        matrix.view.replaceChildren(table);
+        if (!functions.length || !actions.length) { const empty = document.createElement('p'); empty.className = 'ui_empty'; empty.textContent = entity_ui.t(empty.className); matrix.view.append(empty); }
+        matrix.summary.textContent = entity.config.matrix.role && !matrix.selectedRole
+            ? entity_ui.t(matrix.roles.length ? 'ui_matrix_choose_role' : 'ui_matrix_no_roles')
+            : entity_ui.t('ui_matrix_assigned') + ': ' + assigned;
+    }
+    bloquearMatriz(matrix, blocked) {
+        for (const control of [...matrix.controls, matrix.columnControl, ...matrix.cells.values()]) {
+            control.disabled = blocked || control.dataset?.matrixUnavailable === 'true';
+        }
+        matrix.root.setAttribute('aria-busy', String(blocked));
+    }
+    restaurarCasillaMatriz(matrix, key, checked) {
+        const input = matrix.cells.get(key);
+        if (input) input.checked = checked;
+    }
+    enfocarMatriz(entity, search = false) {
+        const matrix = entity.matrixContext;
+        if (!entity_ui.matrixCurrent(entity, matrix) || entity.pending) return false;
+        const target = search ? matrix.filterControl : matrix.roleControl || matrix.cells.values().next().value || matrix.filterControl;
+        target?.focus(); return true;
+    }
+
     // Presentación de pruebas. La ejecución continúa en entity_Test_Data y Data_Test.
     prepararIdioma() {
         setLang(getCookie('lang') === 'EN' ? 'EN' : 'ES');
@@ -349,6 +452,7 @@ class entity_dom_fields extends dom_fields {
         const style = document.createElement('style');
         style.id = 'et2_styles';
         style.textContent = `[hidden]{display:none!important}body{font:16px system-ui,sans-serif;color:#202b36}#add_search_columns{display:flex;align-items:center;gap:12px;flex-wrap:wrap}#label_seleccioncolumnas{margin-left:auto}#seleccioncolumnas{min-width:190px}.et2-table{border-collapse:collapse;width:100%}.et2-table th,.et2-table td{padding:10px;border-bottom:1px solid #ccd4dd;text-align:left}.et2-table button,.et2-form-actions button{cursor:pointer;padding:7px;margin:3px}#IU_manage_table{overflow-x:auto}.contenidoForm{max-height:85vh;overflow:auto;padding:20px}.et2-field{display:grid;grid-template-columns:minmax(130px,1fr) minmax(150px,2fr) auto;gap:6px;margin:12px 0}.et2-field input,.et2-field textarea,.et2-field select{font:inherit;min-width:0;padding:6px;border:2px solid #8795a5;border-radius:3px}.ui_operation_success{background:#d7efdc;color:#1e5630;padding:10px}.ui_operation_refresh_failed{background:#fff1cd;color:#6b4d00;padding:10px}.et2-field-error{grid-column:2/-1;color:#9c1824;font-size:.9em}.et2-invalid{border-color:#b51d2b!important}.et2-valid{border-color:#277340!important}.et2-field [readonly],.et2-field :disabled{background:#edf0f3}.et2-form-actions{display:flex;gap:10px;justify-content:flex-end}#error_action_modal{z-index:1002;padding:24px;max-width:85vw}#modal_action_overlay{z-index:1001}@media(max-width:600px){.et2-field{grid-template-columns:1fr}.et2-field-error{grid-column:auto}}`;
+        style.textContent += `.et2-matrix-toolbar{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin:18px 0}.et2-matrix-toolbar label{display:flex;flex-direction:column;gap:6px;font-weight:600}.et2-matrix-toolbar input,.et2-matrix-toolbar select{font:inherit;padding:8px;min-width:160px;max-width:100%;border:1px solid #8795a5;border-radius:4px}.et2-matrix-toolbar button{font:inherit;padding:9px 14px;cursor:pointer}.et2-matrix-scroll{overflow:auto;max-height:65vh;border:1px solid #ccd4dd;border-radius:5px}.et2-matrix-table{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0}.et2-matrix-table caption{text-align:left;padding:10px;font-weight:600}.et2-matrix-table th,.et2-matrix-table td{min-width:100px;padding:12px;text-align:center}.et2-matrix-table thead th{position:sticky;top:0;background:#edf1f5;z-index:2}.et2-matrix-table th:first-child{position:sticky;left:0;text-align:left;min-width:180px;background:#f7f9fb;z-index:1}.et2-matrix-table thead th:first-child{z-index:3}.et2-matrix-table input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:#24624b}.et2-matrix-table input:disabled{cursor:wait;opacity:.5}.et2-matrix-table input:focus-visible{outline:3px solid #2563a6;outline-offset:3px}.et2-matrix-table tbody tr:hover td{background:#f2f7fb}@media(max-width:600px){.et2-matrix-toolbar label{width:100%}.et2-matrix-table th:first-child{min-width:135px}}`;
         document.head.append(style);
     }
     inicializarInterfaz() {
@@ -502,10 +606,9 @@ const entity_ui = {
         entity_access.cache.clear();
         this.active = entity;
         entity.dom.iniciarGestion(entity);
-        this.renderTable(entity, []); entity.ready = entity.SEARCH();
-    },
-    editable(field) {
-        return this.interfaceDom.esEditable(field);
+        if (entity.config.matrix) entity.dom.mostrarMatrizCargando();
+        else this.renderTable(entity, []);
+        entity.ready = entity.SEARCH();
     },
     current(entity, context) {
         return !!context && this.active === entity && entity.formContext === context && entity.dom.esFormularioActual(context);
@@ -566,10 +669,7 @@ const entity_ui = {
         const data = new FormData();
         for (const { field, file, value } of entity.dom.leerDatosEnvio(context)) {
             if (file) { if (value) data.append(field, value); }
-            else {
-                if (context.action === 'EDIT' && (entity.config.optionalOnEdit || []).includes(field) && value === '') continue;
-                data.append(field, value);
-            }
+            else data.append(field, value);
         }
         return data;
     },
@@ -588,6 +688,7 @@ const entity_ui = {
         const current = () => this.active === entity && entity.request === request && (!fromForm || entity.formContext === context);
         this.status('ui_loading');
         entity.dom.bloquearEnvio(context);
+        if (entity.config.matrix && this.matrixCurrent(entity, entity.matrixContext)) entity.dom.bloquearMatriz(entity.matrixContext, true);
         try {
             const data = fromForm ? this.payload(entity, context) : new FormData();
             if (action === 'SEARCH') {
@@ -614,15 +715,14 @@ const entity_ui = {
                     } catch { /* Si falla el catálogo se conservan los IDs correctos y las etiquetas recibidas. */ }
                 }
                 if (!current()) return false;
-                this.closeForm(entity); entity.crearTablaDatos(rows);
-                return true;
+                this.closeForm(entity);
+                const rendered = await entity.crearTablaDatos(rows);
+                return rendered !== false;
             }
             if (action !== 'SEARCH' && response.ok === true) {
                 entity_access.cache.clear();
-                this.closeForm(entity); entity.pending = false;
-                const refreshed = await entity.SEARCH();
-                if (this.active === entity) this.status(refreshed ? 'ui_operation_success' : 'ui_operation_refresh_failed');
-                return true;
+                this.closeForm(entity);
+                return await this.refreshAfterWrite(entity);
             }
             entity.dom.abrirModalError(response.code || 'ui_error');
             return false;
@@ -634,14 +734,12 @@ const entity_ui = {
             if (this.active === entity && entity.request === request) {
                 this.status('');
                 if (context && this.current(entity, context)) this.updateSubmit(context);
+                if (entity.config.matrix && this.matrixCurrent(entity, entity.matrixContext)) entity.dom.bloquearMatriz(entity.matrixContext, false);
             }
         }
     },
     status(code) {
         this.interfaceDom.mostrarEstado(code);
-    },
-    icon(action) {
-        return this.interfaceDom.crearIcono(action);
     },
     renderTable(entity, rows) {
         entity.datos = entity_access.normalizeRows(entity.config, rows);
@@ -651,6 +749,118 @@ const entity_ui = {
             entity.referenceLabels[field].set(row[field], label);
         }
         entity.dom.mostrarTabla(entity);
+    },
+    // comparte el refresco y su resultado entre los formularios y las casillas
+    async refreshAfterWrite(entity) {
+        entity.pending = false;
+        const refreshed = await entity.SEARCH();
+        if (this.active === entity) this.status(refreshed ? 'ui_operation_success' : 'ui_operation_refresh_failed');
+        return true;
+    },
+    focusMatrix(entity, search = false) {
+        if (!this.matrixCurrent(entity, entity.matrixContext)) return this.refreshMatrix(entity);
+        return entity.dom.enfocarMatriz(entity, search);
+    },
+    matrixKey(entity, relation) {
+        return JSON.stringify(entity.config.keys.map(field => String(relation[field] || '')));
+    },
+    matrixCurrent(entity, matrix) {
+        return !!matrix && this.active === entity && entity.matrixContext === matrix && entity.dom.esMatrizActual(matrix);
+    },
+    // las entidades deciden sus catálogos; el coordinador prepara el estado de la matriz
+    async renderMatrix(entity, rows) {
+        const revision = entity.matrixRevision = Symbol('matrix');
+        const previous = entity.matrixContext;
+        try {
+            const catalogs = await entity.cargarCatalogosMatriz();
+            if (this.active !== entity || entity.matrixRevision !== revision) return false;
+            const actions = catalogs.actions, roles = catalogs.roles || [];
+            const actionIds = new Set(actions.map(row => row.id_accion));
+            const matrix = {
+                ...catalogs, roles, relations: new Map(), pending: false,
+                functionIds: new Set(catalogs.functionalities.map(row => row.id_funcionalidad)),
+                actionIds, roleIds: new Set(roles.map(row => row.id_rol)),
+                pairs: new Set((catalogs.pairs || []).map(row => JSON.stringify([row.id_funcionalidad, row.id_accion]))),
+                selectedRole: roles.some(row => row.id_rol === previous?.selectedRole) ? previous.selectedRole : '',
+                functionFilter: previous?.functionFilter || '', actionFilter: previous?.actionFilter || '',
+                columns: previous && previous.columns.size !== previous.actions.length ? new Set([...previous.columns].filter(id => actionIds.has(id))) : new Set(actionIds),
+                focusKey: previous?.focusKey || null
+            };
+            entity.datos = entity_access.normalizeRows(entity.config, rows);
+            for (const row of entity.datos) matrix.relations.set(this.matrixKey(entity, row), row);
+            entity.matrixContext = matrix;
+            entity.dom.mostrarMatriz(entity, matrix);
+            return true;
+        } catch (error) {
+            if (this.active === entity && entity.matrixRevision === revision) {
+                entity.matrixContext = null;
+                entity.dom.mostrarMatrizError(entity);
+                entity.dom.abrirModalError(error.message || 'ui_error');
+            }
+            return false;
+        }
+    },
+    updateMatrixView(entity, matrix, field, value) {
+        if (!this.matrixCurrent(entity, matrix) || entity.pending || matrix.pending) return false;
+        if (field === 'selectedRole') {
+            if (value && !matrix.roleIds.has(value)) return false;
+            matrix.selectedRole = value;
+        } else if (field === 'columns') matrix.columns = new Set(value.filter(id => matrix.actionIds.has(id)));
+        else if (['functionFilter', 'actionFilter'].includes(field)) matrix[field] = value;
+        else return false;
+        matrix.focusKey = null;
+        entity.dom.actualizarMatriz(entity, matrix); return true;
+    },
+    refreshMatrix(entity) {
+        if (this.active !== entity || entity.pending) return false;
+        entity_access.cache.clear(); return entity.SEARCH();
+    },
+    // una casilla envía exclusivamente las claves de su relación, sin formularios DELETE o EDIT
+    async runMatrix(entity, action, matrix, relation) {
+        if (!this.matrixCurrent(entity, matrix)) return false;
+        const key = this.matrixKey(entity, relation), wasAssigned = matrix.relations.has(key);
+        const restore = () => entity.dom.restaurarCasillaMatriz(matrix, key, wasAssigned);
+        if (entity.pending || matrix.pending) { restore(); return false; }
+        const adding = action === 'ADD';
+        if (!['ADD', 'DELETE'].includes(action)) { restore(); return false; }
+        if (adding === wasAssigned) { restore(); return true; }
+        const validIds = entity.config.keys.every(field => /^[0-9]{1,11}$/.test(String(relation[field] || '')));
+        const validRole = !entity.config.matrix.role || (matrix.roleIds.has(relation.id_rol) && relation.id_rol === matrix.selectedRole);
+        const known = matrix.functionIds.has(relation.id_funcionalidad) && matrix.actionIds.has(relation.id_accion);
+        const validPair = !entity.config.matrix.role || entity.personalize_id_accion_combinacion(relation) === true;
+        if (!validIds || !validRole || !known || (adding && !validPair)) {
+            restore(); entity.dom.abrirModalError('ui_invalid_pair'); return false;
+        }
+        const request = entity.request = Symbol(action);
+        entity.pending = matrix.pending = true; matrix.focusKey = key;
+        entity.dom.bloquearMatriz(matrix, true); this.status('ui_loading');
+        let saved = false;
+        try {
+            const data = new FormData();
+            for (const field of entity.config.keys) data.set(field, relation[field]);
+            const response = await entity.access_functions.peticionBackGeneral(data, entity.nombreentidad, action);
+            saved = response.ok === true;
+            if (saved) entity_access.cache.clear();
+            if (!this.matrixCurrent(entity, matrix) || entity.request !== request) return saved;
+            if (!saved) { restore(); entity.dom.abrirModalError(response.code || 'ui_error'); return false; }
+            if (adding) matrix.relations.set(key, { ...relation, _labels: {} });
+            else matrix.relations.delete(key);
+            entity.datos = [...matrix.relations.values()];
+            entity.dom.actualizarMatriz(entity, matrix);
+            entity.dom.bloquearMatriz(matrix, true);
+            return await this.refreshAfterWrite(entity);
+        } catch (error) {
+            if (this.matrixCurrent(entity, matrix)) {
+                if (!saved) restore();
+                entity.dom.abrirModalError(error.message || 'ui_network');
+            }
+            return saved;
+        } finally {
+            matrix.pending = false;
+            if (entity.request === request) entity.pending = false;
+            if (this.matrixCurrent(entity, matrix)) entity.dom.bloquearMatriz(matrix, false);
+            if (!saved && this.active === entity && entity.request === request) this.status('');
+        }
     },
     setColumns(entity, columns) {
         entity.columnasamostrar = columns;

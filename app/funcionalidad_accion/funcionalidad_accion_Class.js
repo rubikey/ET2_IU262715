@@ -3,6 +3,8 @@ class funcionalidad_accion extends AbstractEntidad {
         super();
         // Configuración propia de esta entidad. Core y Base no se modifican.
         this.config = {
+            "matrix": { "role": false },
+            "referenceDisplay": [],
             "special": ["id_funcionalidad", "id_accion"],
             "columnLabels": {"id_funcionalidad": "ui_functionality", "id_accion": "ui_action", "id_rol": "ui_role"},
             "keys": [
@@ -112,112 +114,59 @@ class funcionalidad_accion extends AbstractEntidad {
         this.dom.mostrar_exito_campo('id_accion');
         return true;
     }
-    // ADD formulario funcionalidad_accion
+    // compatibilidad: comprobación de campos de add
     ADD_submit_funcionalidad_accion() {
         const result = entity_ui.validateFields(this, 'ADD', ['id_funcionalidad', 'id_accion']);
         return result;
     }
-    // EDIT formulario funcionalidad_accion
+    // la relación no admite edición de claves
     EDIT_submit_funcionalidad_accion() {
         this.dom.abrirModalError('ui_association_edit');
         return false;
     }
-    // SEARCH formulario funcionalidad_accion
+    // compatibilidad: comprobación de campos de search
     SEARCH_submit_funcionalidad_accion() {
         const result = entity_ui.validateFields(this, 'SEARCH', ['id_funcionalidad', 'id_accion']);
         return result;
     }
 
-    // HTML del formulario de funcionalidad_accion. Cada acción lo adapta en createForm_ACCION.
+    // la arquitectura conserva un formulario base, aunque esta entidad utiliza una matriz
     manual_form_creation() {
-        return `
-            <form id="form_iu" method="POST" enctype="multipart/form-data" novalidate>
-                <div class="et2-field">
-                    <label id="label_id_funcionalidad" class="ui_functionality" for="id_funcionalidad"></label>
-                    <select id="id_funcionalidad" name="id_funcionalidad" aria-describedby="span_error_id_funcionalidad"><option value="" class="ui_select"></option></select>
-                    <span id="span_error_id_funcionalidad" class="et2-field-error" aria-live="polite" style="display:none"><a id="error_id_funcionalidad"></a></span>
-                </div>
-                <div class="et2-field">
-                    <label id="label_id_accion" class="ui_action" for="id_accion"></label>
-                    <select id="id_accion" name="id_accion" aria-describedby="span_error_id_accion"><option value="" class="ui_select"></option></select>
-                    <span id="span_error_id_accion" class="et2-field-error" aria-live="polite" style="display:none"><a id="error_id_accion"></a></span>
-                </div>
-                <p id="et2_form_note" role="status" hidden></p>
-                <div class="et2-form-actions"></div>
-            </form>`;
+        // contenedor del contrato docente; la gestión visible se construye en la matriz
+        return '<form id="form_iu" novalidate></form>';
     }
 
-    valoresFormulario(fila) {
-        const values = entity_access.normalizeRow(this.config, fila);
-        return values;
-    }
 
     // ADD funcionalidad_accion
     async createForm_ADD(fila = {}) {
-        const context = entity_ui.openForm(this, 'ADD', this.valoresFormulario(fila), {
-            hidden: [],
-            readOnly: [],
-            send: ['id_funcionalidad', 'id_accion'],
-            submit: true
-        });
-        if (!context) return false;
-        await this.dom.rellenarReferencias(this, context, ['id_funcionalidad', 'id_accion']);
-        return entity_ui.finishForm(this, context);
+        return entity_ui.focusMatrix(this, false);
     }
 
-    // EDIT funcionalidad_accion
+    // compatibilidad de edit: vuelve a la matriz
     async createForm_EDIT(fila = {}) {
-        const context = entity_ui.openForm(this, 'EDIT', this.valoresFormulario(fila), {
-            hidden: [],
-            readOnly: ['id_funcionalidad', 'id_accion'],
-            send: [],
-            submit: false,
-            note: 'ui_association_edit'
-        });
-        if (!context) return false;
-        this.dom.crearBotonAccion(context, 'ui_new_association', () => this.createForm_ADD(), true);
-        return entity_ui.finishForm(this, context);
+        // conserva el método esperado; la relación se consulta y cambia desde la matriz
+        return this.createForm_ADD(fila);
     }
 
     // SEARCH funcionalidad_accion
     async createForm_SEARCH(fila = {}) {
-        const context = entity_ui.openForm(this, 'SEARCH', this.valoresFormulario(fila), {
-            hidden: [],
-            readOnly: [],
-            send: ['id_funcionalidad', 'id_accion'],
-            submit: true
-        });
-        if (!context) return false;
-        await this.dom.rellenarReferencias(this, context, ['id_funcionalidad', 'id_accion']);
-        return entity_ui.finishForm(this, context);
+        return entity_ui.focusMatrix(this, true);
     }
 
-    // DELETE funcionalidad_accion
+    // compatibilidad de delete: vuelve a la matriz
     async createForm_DELETE(fila = {}) {
-        const context = entity_ui.openForm(this, 'DELETE', this.valoresFormulario(fila), {
-            hidden: [],
-            readOnly: ['id_funcionalidad', 'id_accion'],
-            send: ['id_funcionalidad', 'id_accion'],
-            submit: true,
-            note: 'ui_delete_confirm'
-        });
-        if (!context) return false;
-        return entity_ui.finishForm(this, context);
+        // conserva el método esperado; la relación se consulta y cambia desde la matriz
+        return this.createForm_ADD(fila);
     }
 
-    // SHOWCURRENT funcionalidad_accion
+    // compatibilidad de showcurrent: vuelve a la matriz
     async createForm_SHOWCURRENT(fila = {}) {
-        const context = entity_ui.openForm(this, 'SHOWCURRENT', this.valoresFormulario(fila), {
-            hidden: [],
-            readOnly: ['id_funcionalidad', 'id_accion'],
-            send: [],
-            submit: false
-        });
-        if (!context) return false;
-        return entity_ui.finishForm(this, context);
+        // conserva el método esperado; la relación se consulta y cambia desde la matriz
+        return this.createForm_ADD(fila);
     }
 
-    ADD() {
+    ADD(matrix = null, relation = null) {
+        if (matrix) return entity_ui.runMatrix(this, 'ADD', matrix, relation);
         return entity_ui.run(this, 'ADD');
     }
 
@@ -229,7 +178,8 @@ class funcionalidad_accion extends AbstractEntidad {
         return entity_ui.run(this, 'SEARCH');
     }
 
-    DELETE() {
+    DELETE(matrix = null, relation = null) {
+        if (matrix) return entity_ui.runMatrix(this, 'DELETE', matrix, relation);
         return entity_ui.run(this, 'DELETE');
     }
 
@@ -241,8 +191,15 @@ class funcionalidad_accion extends AbstractEntidad {
         return true;
     }
 
+    // carga los catálogos que definen los ejes y las combinaciones permitidas de la matriz
+    async cargarCatalogosMatriz() {
+        const [functionalities, actions] = await Promise.all(
+            ['funcionalidad', 'accion'].map(name => entity_access.records(this, name)));
+        return { functionalities, actions, roles: [], pairs: [] };
+    }
+
     crearTablaDatos(datos) {
-        return entity_ui.renderTable(this, datos);
+        return entity_ui.renderMatrix(this, datos);
     }
     modificarcolumnasamostrar(atributo) {
         return entity_ui.toggleColumn(this, atributo);
