@@ -44,7 +44,6 @@
  * @property {string[]} send - campos que se incluyen en la petición al back
  * @property {boolean} submit - indica si se ofrece una operación de envío
  * @property {string} [note] - clave traducible del mensaje de ayuda o confirmación
- * @property {Object<string, string>} [components] - componentes que cambian según la acción
  * @property {ContextoMatriz} [matrixSearch] - matriz cuyos filtros controla el formulario
  */
 /**
@@ -238,7 +237,12 @@ class entity_dom_fields extends dom_fields {
             const validate = () => {
                 if (!entity_ui.current(entity, context)) return;
                 const method = entity[accion + '_' + field.id + '_validation'];
-                if (method) method.call(entity);
+                if (!method) return;
+                const result = method.call(entity);
+                const options = context.references[field.id];
+                if (result === true && field.value && options && !options.has(field.value)) {
+                    this.mostrar_error_campo(field.id, 'ui_reference_invalid');
+                }
             };
             for (const event of events) field.addEventListener(event, validate);
         }
@@ -250,32 +254,34 @@ class entity_dom_fields extends dom_fields {
      */
     validarsubmit(value) { return value === true; }
     /**
-     * rellena el selector o datalist con el catálogo y registra sus valores permitidos
-     * @param {EntidadProyecto} entity - instancia de la entidad que solicita la operación
-     * @param {ContextoFormulario} context - estado del formulario al que pertenece la operación
-     * @param {string} field - nombre del atributo o control de formulario
-     * @param {OpcionReferencia[]} options - valores y etiquetas disponibles en el catálogo
-     * @param {string} [selected=''] - valor que debe quedar seleccionado inicialmente
+     * rellena un select o las sugerencias de un input con datalist y registra las referencias admitidas
+     * @param {EntidadProyecto} entity - instancia que prepara las referencias
+     * @param {ContextoFormulario} context - formulario al que pertenece el componente
+     * @param {string} field - atributo cuyo catálogo se presenta
+     * @param {OpcionReferencia[]} options - identificadores y etiquetas de los registros existentes
+     * @param {string} [selected=''] - valor inicial del select; el input conserva el texto del formulario
      * @returns {void} no devuelve un valor
-     * @throws {Error} si el control requiere un datalist que no existe
+     * @throws {Error} ui_form_invalid si falta el componente o el datalist del input
      */
     rellenarOpciones(entity, context, field, options, selected = '') {
         if (!entity_ui.current(entity, context)) return;
         const control = context.form.querySelector('#' + field);
+        if (!control) throw new Error('ui_form_invalid');
         const search = context.action === 'SEARCH';
         context.references[field] = new Map(options.map(option => [option.value, option.label]));
         if (control.tagName === 'SELECT') {
+            const available = options.some(option => option.value === selected);
             control.replaceChildren(new Option(entity_ui.t(search ? 'ui_all' : 'ui_select'), ''));
             control.options[0].className = search ? 'ui_all' : 'ui_select';
             for (const option of options) control.add(new Option(option.label, option.value));
-            if (control.disabled && selected && !options.some(option => option.value === selected)) control.add(new Option(selected, selected));
-            control.value = options.some(option => option.value === selected) || control.disabled ? selected : '';
+            if (control.disabled && selected && !available) control.add(new Option(selected, selected));
+            control.value = available || control.disabled ? selected : '';
         } else {
-            const list = context.form.querySelector('#' + control.getAttribute('list'));
-            if (!list) throw new Error('ui_form_invalid');
-            list.replaceChildren();
-            for (const option of options) { const node = new Option(option.label, option.value); list.append(node); }
-            control.value = selected;
+            const listId = control.getAttribute('list');
+            const list = listId && context.form.querySelector('#' + listId);
+            if (control.tagName !== 'INPUT' || !list || list.tagName !== 'DATALIST') throw new Error('ui_form_invalid');
+            list.replaceChildren(...options.map(option => new Option(option.label, option.value)));
+            // conserva lo que el usuario haya escrito mientras se cargaban las sugerencias
         }
         if (!options.length && !search) context.unavailable.add(field);
         else context.unavailable.delete(field);
@@ -479,14 +485,6 @@ class entity_dom_fields extends dom_fields {
         for (const field of entity.config.fields) {
             let control = form.querySelector('#' + field);
             if (!control) { entity.dom.abrirModalError('ui_form_invalid'); return null; }
-            // la entidad puede elegir un select para una acción sin cambiar el campo en SEARCH
-            if (policy.components?.[field] === 'select' && control.tagName !== 'SELECT') {
-                const select = document.createElement('select');
-                for (const attribute of control.attributes) {
-                    if (!['type', 'value', 'list', 'inputmode'].includes(attribute.name)) select.setAttribute(attribute.name, attribute.value);
-                }
-                control.replaceWith(select); control = select;
-            }
             if (control.type !== 'file') {
                 const value = values[field] || '';
                 if (control.tagName === 'SELECT' && value) control.add(new Option(values._labels?.[field] || value, value, true, true));
@@ -1220,65 +1218,61 @@ const entity_ui = {
         return data;
     },
     /**
-     * coordina validación, petición y tratamiento de respuesta de ADD, EDIT, DELETE o SEARCH
-     * evita envíos duplicados y descarta respuestas de una gestión anterior
-     * @param {EntidadProyecto} entity - instancia de la entidad que solicita la operación
-     * @param {'ADD'|'EDIT'|'DELETE'|'SEARCH'} action - operación solicitada por la entidad
-     * @returns {Promise<boolean>} resultado de la operación; un refresco fallido se informa por separado
+     * consulta los datos con los filtros actuales y presenta el resultado
+     * conserva la paginación y descarta respuestas de una gestión anterior
+     * @param {EntidadProyecto} entity - instancia cuya búsqueda se quiere ejecutar
+     * @returns {Promise<boolean>} true si se han presentado los datos o false si falla la búsqueda
      */
-    async run(entity, action) {
+    async search(entity) {
         if (entity.pending || this.active !== entity) return false;
-        if ((entity.config.readOnlyActions || []).includes(action)) { entity.dom.abrirModalError('ui_association_edit'); return false; }
         const context = entity.formContext;
-        const fromForm = context?.action === action;
+        const fromForm = context?.action === 'SEARCH';
         const accepted = this.validatedSubmits.get(entity);
         this.validatedSubmits.delete(entity);
-        if (action !== 'SEARCH' && !fromForm) { entity.dom.abrirModalError('ui_form_invalid'); return false; }
         if (fromForm && (!context.ready || context.loading || context.referenceError || context.unavailable.size)) return false;
-        if (fromForm && accepted !== context && entity[action + '_submit_' + entity.nombreentidad]() !== true) return false;
+        if (fromForm && accepted !== context && entity['SEARCH_submit_' + entity.nombreentidad]() !== true) return false;
+
         entity.pending = true;
-        const request = entity.request = Symbol(action);
+        const request = entity.request = Symbol('SEARCH');
         const current = () => this.active === entity && entity.request === request && (!fromForm || entity.formContext === context);
         this.status('ui_loading');
         entity.dom.bloquearEnvio(context);
         if (entity.config.matrix && this.matrixCurrent(entity, entity.matrixContext)) entity.dom.bloquearMatriz(entity.matrixContext, true);
         try {
-            const data = fromForm ? this.payload(entity, context) : new FormData();
-            if (action === 'SEARCH') {
-                if (fromForm) entity.lastSearch = new FormData();
-                if (fromForm) for (const [key, value] of data) entity.lastSearch.append(key, value);
-                else for (const [key, value] of entity.lastSearch) data.append(key, value);
+            const filters = fromForm ? this.payload(entity, context) : new FormData();
+            if (fromForm) {
+                entity.lastSearch = new FormData();
+                for (const [key, value] of filters) entity.lastSearch.append(key, value);
+            } else {
+                for (const [key, value] of entity.lastSearch) filters.append(key, value);
             }
-            const response = action === 'SEARCH'
-                ? await entity_access.searchAll(entity, entity.nombreentidad, data)
-                : await entity.access_functions.peticionBackGeneral(data, entity.nombreentidad, action);
+            const response = await entity_access.searchAll(entity, entity.nombreentidad, filters);
             if (!current()) return false;
-            if (action === 'SEARCH' && (response.ok === true || ['RECORDSET_DATOS', 'RECORDSET_VACIO'].includes(response.code))) {
-                const rows = entity_access.normalizeRows(entity.config, response.resource || []);
-                const references = Object.keys(entity.config.references || {}).filter(field => (entity.config.referenceDisplay || Object.keys(entity.config.references || {})).includes(field));
-                for (const field of references) {
-                    const reference = entity.config.references[field];
-                    try {
-                        const records = await entity_access.records(entity, reference[0]);
-                        if (!current()) return false;
-                        for (const row of rows) {
-                            const record = records.find(record => record[reference[1]] === row[field]);
-                            if (record) row._labels[field] = record[reference[2]] || row[field];
-                        }
-                    } catch { /* Si falla el catálogo se conservan los IDs correctos y las etiquetas recibidas. */ }
+            if (response.ok !== true && !['RECORDSET_DATOS', 'RECORDSET_VACIO'].includes(response.code)) {
+                entity.dom.abrirModalError(response.code || 'ui_error');
+                return false;
+            }
+
+            const rows = entity_access.normalizeRows(entity.config, response.resource || []);
+            const references = Object.keys(entity.config.references || {}).filter(field =>
+                (entity.config.referenceDisplay || Object.keys(entity.config.references || {})).includes(field));
+            for (const field of references) {
+                const reference = entity.config.references[field];
+                try {
+                    const records = await entity_access.records(entity, reference[0]);
+                    if (!current()) return false;
+                    for (const row of rows) {
+                        const record = records.find(record => record[reference[1]] === row[field]);
+                        if (record) row._labels[field] = record[reference[2]] || row[field];
+                    }
+                } catch {
+                    // si falla la etiqueta se conservan el id y los datos ya recibidos
                 }
-                if (!current()) return false;
-                this.closeForm(entity);
-                const rendered = await entity.crearTablaDatos(rows);
-                return rendered !== false;
             }
-            if (action !== 'SEARCH' && response.ok === true) {
-                entity_access.cache.clear();
-                this.closeForm(entity);
-                return await this.refreshAfterWrite(entity);
-            }
-            entity.dom.abrirModalError(response.code || 'ui_error');
-            return false;
+            if (!current()) return false;
+            this.closeForm(entity);
+            const rendered = await entity.crearTablaDatos(rows);
+            return rendered !== false;
         } catch (error) {
             if (current()) entity.dom.abrirModalError(error.message || 'ui_network');
             return false;
@@ -1287,6 +1281,58 @@ const entity_ui = {
             if (this.active === entity && entity.request === request) {
                 this.status('');
                 if (context && this.current(entity, context)) this.updateSubmit(context);
+                if (entity.config.matrix && this.matrixCurrent(entity, entity.matrixContext)) entity.dom.bloquearMatriz(entity.matrixContext, false);
+            }
+        }
+    },
+    /**
+     * valida y envía un alta, edición o borrado desde su formulario
+     * mantiene los datos si falla y refresca la búsqueda tras una escritura aceptada
+     * @param {EntidadProyecto} entity - instancia que solicita la escritura
+     * @param {'ADD'|'EDIT'|'DELETE'} action - operación de escritura solicitada
+     * @returns {Promise<boolean>} true si se acepta la escritura o false si no puede completarse
+     */
+    async write(entity, action) {
+        if (entity.pending || this.active !== entity) return false;
+        if ((entity.config.readOnlyActions || []).includes(action)) {
+            entity.dom.abrirModalError('ui_association_edit');
+            return false;
+        }
+        const context = entity.formContext;
+        const accepted = this.validatedSubmits.get(entity);
+        this.validatedSubmits.delete(entity);
+        if (context?.action !== action) {
+            entity.dom.abrirModalError('ui_form_invalid');
+            return false;
+        }
+        if (!context.ready || context.loading || context.referenceError || context.unavailable.size) return false;
+        if (accepted !== context && entity[action + '_submit_' + entity.nombreentidad]() !== true) return false;
+
+        entity.pending = true;
+        const request = entity.request = Symbol(action);
+        const current = () => this.active === entity && entity.request === request && entity.formContext === context;
+        this.status('ui_loading');
+        entity.dom.bloquearEnvio(context);
+        if (entity.config.matrix && this.matrixCurrent(entity, entity.matrixContext)) entity.dom.bloquearMatriz(entity.matrixContext, true);
+        try {
+            const data = this.payload(entity, context);
+            const response = await entity.access_functions.peticionBackGeneral(data, entity.nombreentidad, action);
+            if (!current()) return false;
+            if (response.ok !== true) {
+                entity.dom.abrirModalError(response.code || 'ui_error');
+                return false;
+            }
+            entity_access.cache.clear();
+            this.closeForm(entity);
+            return await this.refreshAfterWrite(entity);
+        } catch (error) {
+            if (current()) entity.dom.abrirModalError(error.message || 'ui_network');
+            return false;
+        } finally {
+            if (entity.request === request) entity.pending = false;
+            if (this.active === entity && entity.request === request) {
+                this.status('');
+                if (this.current(entity, context)) this.updateSubmit(context);
                 if (entity.config.matrix && this.matrixCurrent(entity, entity.matrixContext)) entity.dom.bloquearMatriz(entity.matrixContext, false);
             }
         }
@@ -1557,13 +1603,6 @@ const entity_ui = {
         entity.columnasamostrar = columns;
         entity.dom.actualizarColumnas(columns);
     },
-    /**
-     * alterna la presencia de un atributo en la selección de columnas visibles
-     * @param {EntidadProyecto} entity - instancia de la entidad que solicita la operación
-     * @param {string} field - nombre del atributo o control de formulario
-     * @returns {void} no devuelve un valor
-     */
-    toggleColumn(entity, field) { entity.columnasamostrar = entity.columnasamostrar.includes(field) ? entity.columnasamostrar.filter(column => column !== field) : [...entity.columnasamostrar, field]; this.renderTable(entity, entity.datos); }
 };
 
 entity_ui.interfaceDom.alCargar(() => entity_ui.interfaceDom.inicializarInterfaz());

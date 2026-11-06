@@ -333,7 +333,7 @@ class rolaccionfuncionalidad extends AbstractEntidad {
      */
     ADD(matrix = null, relation = null) {
         if (matrix) return entity_ui.runMatrix(this, 'ADD', matrix, relation);
-        return entity_ui.run(this, 'ADD');
+        return entity_ui.write(this, 'ADD');
     }
 
     /**
@@ -341,7 +341,7 @@ class rolaccionfuncionalidad extends AbstractEntidad {
      * @returns {Promise<boolean>} resultado de la operación solicitada
      */
     EDIT() {
-        return entity_ui.run(this, 'EDIT');
+        return entity_ui.write(this, 'EDIT');
     }
 
     /**
@@ -349,7 +349,7 @@ class rolaccionfuncionalidad extends AbstractEntidad {
      * @returns {Promise<boolean>} resultado de la operación solicitada
      */
     SEARCH() {
-        return entity_ui.run(this, 'SEARCH');
+        return entity_ui.search(this);
     }
 
     /**
@@ -360,7 +360,7 @@ class rolaccionfuncionalidad extends AbstractEntidad {
      */
     DELETE(matrix = null, relation = null) {
         if (matrix) return entity_ui.runMatrix(this, 'DELETE', matrix, relation);
-        return entity_ui.run(this, 'DELETE');
+        return entity_ui.write(this, 'DELETE');
     }
 
     /**
@@ -399,14 +399,6 @@ class rolaccionfuncionalidad extends AbstractEntidad {
         return entity_ui.renderMatrix(this, datos);
     }
     /**
-     * alterna la visibilidad del atributo en las columnas de la tabla
-     * @param {string} atributo - nombre del atributo cuya presentación o visibilidad se adapta
-     * @returns {void} no devuelve un valor
-     */
-    modificarcolumnasamostrar(atributo) {
-        return entity_ui.toggleColumn(this, atributo);
-    }
-    /**
      * adapta la presentación de un atributo especial sin modificar su valor original
      * @param {string} atributo - nombre del atributo cuya presentación o visibilidad se adapta
      * @param {*} valor - valor del atributo recibido para su presentación
@@ -414,14 +406,5 @@ class rolaccionfuncionalidad extends AbstractEntidad {
      */
     mostrarcambioatributo(atributo, valor) {
         return this.referenceLabels?.[atributo]?.get(String(valor)) || valor || '';
-    }
-    /**
-     * mantiene el punto de entrada de la arquitectura para la presentación especial
-     * @param {string} atributo - nombre del atributo cuya presentación o visibilidad se adapta
-     * @param {*} valor - valor del atributo recibido para su presentación
-     * @returns {string|number|Node} valor adaptado por mostrarcambioatributo
-     */
-    cambiarmostrarespecial(atributo, valor) {
-        return this.mostrarcambioatributo(atributo, valor);
     }
 }

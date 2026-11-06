@@ -2,16 +2,16 @@ datosgenerales = {
     "Lider": [
         "Boo Pego, Ruben",
         "ET2",
-        15
+        21
     ],
     "Participante1": [
         "Villar Constenla, Jose Manuel",
         "ET2",
-        0
+        12
     ],
     "Participante2": [
         "Gonzalez Alvarez, Diego",
         "ET2",
-        0
+        9
     ]
 };

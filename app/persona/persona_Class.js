@@ -620,7 +620,7 @@ class persona extends AbstractEntidad {
     // devuelve true si todos son correctos; si hay fallos, devuelve un objeto con sus códigos
     // estas listas indican qué validar.
     // Los campos a enviar se declaran en send de cada createForm
-    // el envío posterior lo coordina entity_ui.run(), que utiliza entity_access para la petición
+    // el envío posterior lo coordina entity_ui.write(), que utiliza entity_access para la petición
 
     // add formulario persona
     /**
@@ -655,7 +655,7 @@ class persona extends AbstractEntidad {
     // et2-field aplica el CSS añadido por aplicarEstilos() de entity_dom_fields
     // for vincula etiqueta y campo; class="label_..." permite traducir la etiqueta
     // aria-describedby relaciona el campo con su error y aria-live permite anunciar sus cambios
-    // en ADD la política convierte el DNI en select; la pertenencia se comprueba en validateFields
+    // en add el dni usa un input con datalist; validateFields comprueba la pertenencia al catálogo
     /**
      * devuelve el html común que cada acción adapta antes de mostrar el formulario
      * @returns {string} plantilla html sin insertar todavía en el documento
@@ -665,7 +665,8 @@ class persona extends AbstractEntidad {
             <form id="form_iu" method="POST" enctype="multipart/form-data" novalidate>
                 <div class="et2-field">
                     <label id="label_dni" class="label_dni" for="dni"></label>
-                    <input id="dni" name="dni" aria-describedby="span_error_dni" type="text">
+                    <input id="dni" name="dni" aria-describedby="span_error_dni" type="text" list="opciones_dni">
+                    <datalist id="opciones_dni"></datalist>
                     <span id="span_error_dni" class="et2-field-error" aria-live="polite" style="display:none"><a id="error_dni"></a></span>
                 </div>
                 <div class="et2-field">
@@ -741,7 +742,6 @@ class persona extends AbstractEntidad {
     async createForm_ADD(fila = {}) {
         const context = entity_ui.openForm(this, 'ADD', this.valoresFormulario(fila), {
             hidden: ['foto_persona'],
-            components: { dni: 'select' },
             readOnly: [],
             send: ['dni', 'nombre_persona', 'apellidos_persona', 'fechaNacimiento_persona', 'direccion_persona', 'telefono_persona', 'email_persona', 'nuevo_foto_persona'],
             submit: true,
@@ -749,7 +749,7 @@ class persona extends AbstractEntidad {
         });
         if (!context) return false; // no continúa si no se pudo abrir el formulario
         this.prepararFoto(context, 'ADD');
-        // espera a cargar el select de usuarios antes de dejar listo el formulario
+        // espera las sugerencias de usuarios antes de habilitar el formulario
         await this.dom.rellenarReferencias(this, context, ['dni']);
         return entity_ui.finishForm(this, context);
     }
@@ -852,7 +852,7 @@ class persona extends AbstractEntidad {
      * @returns {Promise<boolean>} resultado de la operación solicitada
      */
     ADD() {
-        return entity_ui.run(this, 'ADD');
+        return entity_ui.write(this, 'ADD');
     }
 
     /**
@@ -860,7 +860,7 @@ class persona extends AbstractEntidad {
      * @returns {Promise<boolean>} resultado de la operación solicitada
      */
     EDIT() {
-        return entity_ui.run(this, 'EDIT');
+        return entity_ui.write(this, 'EDIT');
     }
 
     /**
@@ -868,7 +868,7 @@ class persona extends AbstractEntidad {
      * @returns {Promise<boolean>} resultado de la operación solicitada
      */
     SEARCH() {
-        return entity_ui.run(this, 'SEARCH');
+        return entity_ui.search(this);
     }
 
     /**
@@ -876,7 +876,7 @@ class persona extends AbstractEntidad {
      * @returns {Promise<boolean>} resultado de la operación solicitada
      */
     DELETE() {
-        return entity_ui.run(this, 'DELETE');
+        return entity_ui.write(this, 'DELETE');
     }
 
     // para borrar se comprueba la clave del registro original, sin revalidar los demás datos
@@ -907,15 +907,6 @@ class persona extends AbstractEntidad {
     crearTablaDatos(datos) {
         return entity_ui.renderTable(this, datos);
     }
-    // alterna la visibilidad de una columna elegida por el usuario
-    /**
-     * alterna la visibilidad del atributo en las columnas de la tabla
-     * @param {string} atributo - nombre del atributo cuya presentación o visibilidad se adapta
-     * @returns {void} no devuelve un valor
-     */
-    modificarcolumnasamostrar(atributo) {
-        return entity_ui.toggleColumn(this, atributo);
-    }
     // adapta los valores especiales de la tabla: fecha legible y enlace para abrir la foto
     /**
      * adapta la presentación de un atributo especial sin modificar su valor original
@@ -929,15 +920,5 @@ class persona extends AbstractEntidad {
             return this.dom.crearEnlaceFichero(this.config.fileBase, valor);
         }
         return valor ?? '';
-    }
-    // mantiene el punto de entrada de presentación especial reutilizando la misma adaptación
-    /**
-     * mantiene el punto de entrada de la arquitectura para la presentación especial
-     * @param {string} atributo - nombre del atributo cuya presentación o visibilidad se adapta
-     * @param {*} valor - valor del atributo recibido para su presentación
-     * @returns {string|number|Node} valor adaptado por mostrarcambioatributo
-     */
-    cambiarmostrarespecial(atributo, valor) {
-        return this.mostrarcambioatributo(atributo, valor);
     }
 }
