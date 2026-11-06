@@ -169,7 +169,7 @@ class usuario extends AbstractEntidad {
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
      */
     EDIT_contrasena_validation() {
-        // el BACK exige contraseña también en EDIT. Misma regla dentro y fuera de las pruebas
+        // valida la contraseña precargada o la nueva introducida al editar
         return this.ADD_contrasena_validation();
     }
     // edit id_rol

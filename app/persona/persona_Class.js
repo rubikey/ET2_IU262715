@@ -325,7 +325,7 @@ class persona extends AbstractEntidad {
     EDIT_nuevo_foto_persona_validation() {
         return this.personalize_nuevo_foto_persona_fichero('nuevo_foto_persona', false);
     }
-    // search acepta el campo vacío y no impone tamaños mínimos
+    // los campos de texto de SEARCH aceptan campo vacío y no imponen tamaños mínimos
     // search dni
     /**
      * valida el criterio de búsqueda de dni
