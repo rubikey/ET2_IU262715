@@ -713,7 +713,7 @@ class entity_dom_fields extends dom_fields {
                 const checked = matrix.relations.has(key);
                 const allowed = !entity.config.matrix.role || matrix.pairs.has(JSON.stringify([relation.id_funcionalidad, relation.id_accion]));
                 if (!allowed && !checked) {
-                    const unavailable = document.createElement('span'); unavailable.textContent = '—'; unavailable.title = entity_ui.t('ui_matrix_unavailable');
+                    const unavailable = document.createElement('span'); unavailable.textContent = '—'; unavailable.dataset.titleCode = 'ui_matrix_unavailable'; unavailable.title = entity_ui.t(unavailable.dataset.titleCode);
                     unavailable.setAttribute('aria-label', unavailable.title); cell.append(unavailable); continue;
                 }
                 const input = document.createElement('input'); input.type = 'checkbox'; input.checked = checked;
@@ -722,7 +722,8 @@ class entity_dom_fields extends dom_fields {
                 input.disabled = matrix.pending || input.dataset.matrixUnavailable === 'true';
                 const role = matrix.roles.find(row => row.id_rol === matrix.selectedRole);
                 input.setAttribute('aria-label', [role?.rol_name, title.textContent, action.nombre_accion || action.id_accion].filter(Boolean).join(' · '));
-                input.title = entity_ui.t(!allowed ? 'ui_matrix_remove_only' : input.dataset.matrixUnavailable === 'true' ? 'ui_matrix_choose_role' : checked ? 'ui_matrix_unassign' : 'ui_matrix_assign');
+                input.dataset.titleCode = !allowed ? 'ui_matrix_remove_only' : input.dataset.matrixUnavailable === 'true' ? 'ui_matrix_choose_role' : checked ? 'ui_matrix_unassign' : 'ui_matrix_assign';
+                input.title = entity_ui.t(input.dataset.titleCode);
                 input.onchange = () => entity[input.checked ? 'ADD' : 'DELETE'](matrix, relation);
                 matrix.cells.set(key, input); cell.append(input); if (checked) assigned++;
             }
@@ -732,15 +733,23 @@ class entity_dom_fields extends dom_fields {
         const roleMissing = entity.config.matrix.role && !matrix.selectedRole;
         // el selector ya indica que hay que elegir rol, sin repetir ese aviso debajo
         matrix.summary.hidden = roleMissing && matrix.roles.length > 0;
-        matrix.summary.textContent = roleMissing
-            ? (matrix.roles.length ? '' : entity_ui.t('ui_matrix_no_roles'))
-            : entity_ui.t('ui_matrix_assigned') + ': ' + assigned;
+        matrix.summary.replaceChildren();
+        if (!roleMissing || !matrix.roles.length) {
+            const label = document.createElement('span');
+            label.className = roleMissing ? 'ui_matrix_no_roles' : 'ui_matrix_assigned';
+            label.textContent = entity_ui.t(label.className);
+            matrix.summary.append(label);
+            if (!roleMissing) matrix.summary.append(': ' + assigned);
+        }
         for (const [filter, key, name, catalog, code] of [
             ['functionFilter', 'id_funcionalidad', 'nombre_funcionalidad', matrix.functionalities, 'ui_functionality'],
             ['actionFilter', 'id_accion', 'nombre_accion', matrix.actions, 'ui_action']
         ]) {
             const row = catalog.find(row => row[key] === matrix[filter]);
-            if (row) matrix.summary.textContent += ` · ${entity_ui.t(code)}: ${row[name] || row[key]}`;
+            if (row) {
+                const label = document.createElement('span'); label.className = code; label.textContent = entity_ui.t(code);
+                matrix.summary.append(' · ', label, ': ' + (row[name] || row[key]));
+            }
         }
     }
     /**
@@ -781,11 +790,17 @@ class entity_dom_fields extends dom_fields {
 
     // presentación de pruebas. La ejecución continúa en entity_Test_Data y Data_Test
     /**
-     * aplica el idioma seleccionado a los elementos traducibles del documento
+     * aplica el idioma seleccionado a los textos y ayudas de los elementos de la matriz
+     * @param {string} [lang] - idioma ES o EN; si falta utiliza la cookie actual
      * @returns {void} no devuelve un valor
      */
-    prepararIdioma() {
-        setLang(getCookie('lang') === 'EN' ? 'EN' : 'ES');
+    prepararIdioma(lang = getCookie('lang') === 'EN' ? 'EN' : 'ES') {
+        setLang(lang);
+        for (const element of document.querySelectorAll('#et2_matrix [data-title-code]')) {
+            const previousTitle = element.title;
+            element.title = entity_ui.t(element.dataset.titleCode);
+            if (element.getAttribute('aria-label') === previousTitle) element.setAttribute('aria-label', element.title);
+        }
     }
     /**
      * abre una ventana nueva para presentar la batería de pruebas
@@ -868,6 +883,10 @@ class entity_dom_fields extends dom_fields {
      */
     inicializarInterfaz() {
         this.aplicarEstilos();
+        for (const [name, lang] of [['Spain', 'ES'], ['United-Kingdom', 'EN']]) {
+            const flag = document.querySelector(`img[src$="/${name}.png"]`);
+            if (flag) flag.onclick = () => this.prepararIdioma(lang);
+        }
         const testIcon = document.querySelector('img[src$="/TEST.png"]'); if (testIcon) testIcon.id = 'botonTEST';
         for (const image of document.querySelectorAll('img[src$="/BACK.png"]')) image.onclick = () => { if (entity_ui.active) entity_ui.closeForm(entity_ui.active); };
         for (const action of ['ADD', 'SEARCH', 'TEST', 'BACK']) for (const img of document.querySelectorAll(`img[src$="/${action}.png"]`)) { img.classList.add('action_' + action); img.tabIndex = 0; img.setAttribute('role', 'button'); img.onkeydown = event => { if (['Enter', ' '].includes(event.key)) { event.preventDefault(); img.click(); } }; }
@@ -998,7 +1017,8 @@ class entity_access extends ExternalAccess {
             // filaspagina es el parámetro de entrada; el BACK devuelve el tamaño como filas
             const answer = await entity.access_functions.peticionBackGeneral(page, name, 'SEARCH', { empieza: start, filaspagina: pageSize });
             if (answer.ok !== true && !['RECORDSET_DATOS', 'RECORDSET_VACIO'].includes(answer.code)) return answer;
-            const rows = answer.resource || [];
+            // solo una respuesta vacía explícita puede omitir el conjunto de filas
+            const rows = answer.code === 'RECORDSET_VACIO' ? (answer.resource || []) : answer.resource;
             if (!Array.isArray(rows)) throw new Error('ui_invalid_response');
             const hasTotal = answer.total !== undefined;
             const total = hasTotal ? Number(answer.total) : null;
@@ -1059,7 +1079,7 @@ class entity_access extends ExternalAccess {
             let answer;
             try { answer = await response.json(); }
             catch { throw new Error('ui_invalid_response'); }
-            if (!answer || typeof answer !== 'object' || !('code' in answer)) throw new Error('ui_invalid_response');
+            if (!answer || typeof answer !== 'object' || typeof answer.code !== 'string' || !answer.code) throw new Error('ui_invalid_response');
             return answer;
         } catch (error) { throw new Error(error.message === 'ui_invalid_response' ? error.message : 'ui_network'); }
         finally { clearTimeout(timer); }
