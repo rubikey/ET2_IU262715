@@ -724,8 +724,11 @@ class entity_dom_fields extends dom_fields {
         }
         matrix.view.replaceChildren(table);
         if (!functions.length || !actions.length) { const empty = document.createElement('p'); empty.className = 'ui_empty'; empty.textContent = entity_ui.t(empty.className); matrix.view.append(empty); }
-        matrix.summary.textContent = entity.config.matrix.role && !matrix.selectedRole
-            ? entity_ui.t(matrix.roles.length ? 'ui_matrix_choose_role' : 'ui_matrix_no_roles')
+        const roleMissing = entity.config.matrix.role && !matrix.selectedRole;
+        // el selector ya indica que hay que elegir rol, sin repetir ese aviso debajo
+        matrix.summary.hidden = roleMissing && matrix.roles.length > 0;
+        matrix.summary.textContent = roleMissing
+            ? (matrix.roles.length ? '' : entity_ui.t('ui_matrix_no_roles'))
             : entity_ui.t('ui_matrix_assigned') + ': ' + assigned;
         for (const [filter, key, name, catalog, code] of [
             ['functionFilter', 'id_funcionalidad', 'nombre_funcionalidad', matrix.functionalities, 'ui_functionality'],
