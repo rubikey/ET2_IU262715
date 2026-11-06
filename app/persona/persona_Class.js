@@ -11,7 +11,7 @@ class persona extends AbstractEntidad {
      */
     constructor(esTest = null) {
         super(); // inicializa la parte heredada de AbstractEntidad
-        // configuración propia de esta entidad. Core y Base no se modifican
+        // configuración propia de esta entidad
 
         this.config = {
             // dirección base para construir los enlaces a las fotos almacenadas
@@ -442,7 +442,7 @@ class persona extends AbstractEntidad {
             this.dom.mostrar_error_campo('email_persona', 'email_persona_max_size_ko');
             return 'email_persona_max_size_ko';
         }
-        if (!(this.validations.format('email_persona', /^[^\s\x00-\x1f\x7f]*$/.source))) {
+        if (!(this.validations.format('email_persona', /^[^\s\x00-\x1f\x7f-\x9f]*$/.source))) {
             this.dom.mostrar_error_campo('email_persona', 'email_persona_format_ko');
             return 'email_persona_format_ko';
         }

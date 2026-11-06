@@ -9,7 +9,7 @@ class rolaccionfuncionalidad extends AbstractEntidad {
      */
     constructor(esTest = null) {
         super();
-        // configuración propia de esta entidad. Core y Base no se modifican
+        // configuración propia de esta entidad
         this.config = {
             "matrix": { "role": true },
             "referenceDisplay": [],
