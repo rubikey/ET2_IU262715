@@ -1,4 +1,12 @@
+/**
+ * gestiona usuarios y roles con tratamiento separado de la contraseña
+ * @extends {AbstractEntidad}
+ */
 class usuario extends AbstractEntidad {
+    /**
+     * configura la entidad usuario y prepara su gestión fuera del modo test
+     * @param {string|null} [esTest=null] - con 'test' prepara la entidad sin abrir la gestión ni consultar el back
+     */
     constructor(esTest = null) {
         super();
         // Configuración propia de esta entidad. Core y Base no se modifican.
@@ -38,6 +46,10 @@ class usuario extends AbstractEntidad {
     }
     // Devuelve el primer código de error o true si el campo es correcto.
     // ADD dni
+    /**
+     * valida dni para la acción add
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     ADD_dni_validation() {
         if (!this.validations.min_size('dni', 9)) {
             this.dom.mostrar_error_campo('dni', 'dni_min_size_ko');
@@ -59,6 +71,11 @@ class usuario extends AbstractEntidad {
         return true;
     }
     // personalized: correspondencia entre los ocho números y la letra del DNI.
+    /**
+     * comprueba la correspondencia entre los ocho números del dni y su letra de control
+     * @param {string} id - id del campo o elemento sobre el que se actúa
+     * @returns {boolean} true si el formato y la letra de control son correctos
+     */
     personalize_dni(id) {
         const dni = this.dom.valorCampo(id);
         if (!/^[0-9]{8}[A-Z]$/.test(dni)) return false;
@@ -67,6 +84,10 @@ class usuario extends AbstractEntidad {
         return letras[numero % 23] === dni[8];
     }
     // ADD usuario
+    /**
+     * valida usuario para la acción add
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     ADD_usuario_validation() {
         if (!this.validations.min_size('usuario', 5)) {
             this.dom.mostrar_error_campo('usuario', 'usuario_min_size_ko');
@@ -84,6 +105,10 @@ class usuario extends AbstractEntidad {
         return true;
     }
     // ADD contrasena
+    /**
+     * valida contrasena para la acción add
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     ADD_contrasena_validation() {
         if (!this.validations.min_size('contrasena', 8)) {
             this.dom.mostrar_error_campo('contrasena', 'contrasena_min_size_ko');
@@ -101,6 +126,10 @@ class usuario extends AbstractEntidad {
         return true;
     }
     // ADD id_rol
+    /**
+     * valida id_rol para la acción add
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     ADD_id_rol_validation() {
         if (!this.validations.min_size('id_rol', 1)) {
             this.dom.mostrar_error_campo('id_rol', 'id_rol_min_size_ko');
@@ -119,24 +148,44 @@ class usuario extends AbstractEntidad {
     }
     // EDIT comparte las restricciones de ADD, incluidos los identificadores.
     // EDIT dni
+    /**
+     * valida dni para la acción edit
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     EDIT_dni_validation() {
         return this.ADD_dni_validation();
     }
     // EDIT usuario
+    /**
+     * valida usuario para la acción edit
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     EDIT_usuario_validation() {
         return this.ADD_usuario_validation();
     }
     // EDIT contrasena
+    /**
+     * valida contrasena para la acción edit
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     EDIT_contrasena_validation() {
         // El BACK exige contraseña también en EDIT. Misma regla dentro y fuera de las pruebas.
         return this.ADD_contrasena_validation();
     }
     // EDIT id_rol
+    /**
+     * valida id_rol para la acción edit
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     EDIT_id_rol_validation() {
         return this.ADD_id_rol_validation();
     }
     // SEARCH permite fragmentos y campos vacíos; no exige tamaño mínimo.
     // SEARCH dni
+    /**
+     * valida el criterio de búsqueda de dni
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     SEARCH_dni_validation() {
         if (!this.validations.max_size('dni', 9)) {
             this.dom.mostrar_error_campo('dni', 'dni_max_size_ko');
@@ -150,6 +199,10 @@ class usuario extends AbstractEntidad {
         return true;
     }
     // SEARCH usuario
+    /**
+     * valida el criterio de búsqueda de usuario
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     SEARCH_usuario_validation() {
         if (!this.validations.max_size('usuario', 45)) {
             this.dom.mostrar_error_campo('usuario', 'usuario_max_size_ko');
@@ -163,6 +216,10 @@ class usuario extends AbstractEntidad {
         return true;
     }
     // SEARCH contrasena
+    /**
+     * valida el criterio de búsqueda de contrasena
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     SEARCH_contrasena_validation() {
         if (!this.validations.max_size('contrasena', 45)) {
             this.dom.mostrar_error_campo('contrasena', 'contrasena_max_size_ko');
@@ -176,6 +233,10 @@ class usuario extends AbstractEntidad {
         return true;
     }
     // SEARCH id_rol
+    /**
+     * valida el criterio de búsqueda de id_rol
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     SEARCH_id_rol_validation() {
         const valor = this.dom.valorCampo('id_rol');
         if (!this.validations.max_size('id_rol', 11)) {
@@ -191,22 +252,38 @@ class usuario extends AbstractEntidad {
         return true;
     }
     // ADD formulario usuario
+    /**
+     * comprueba todos los campos editables del formulario add
+     * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
+     */
     ADD_submit_usuario() {
         const result = entity_ui.validateFields(this, 'ADD', ['dni', 'usuario', 'contrasena', 'id_rol']);
         return result;
     }
     // EDIT formulario usuario
+    /**
+     * comprueba todos los campos editables del formulario edit
+     * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
+     */
     EDIT_submit_usuario() {
         const result = entity_ui.validateFields(this, 'EDIT', ['usuario', 'contrasena', 'id_rol']);
         return result;
     }
     // SEARCH formulario usuario
+    /**
+     * comprueba todos los campos editables del formulario search
+     * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
+     */
     SEARCH_submit_usuario() {
         const result = entity_ui.validateFields(this, 'SEARCH', ['dni', 'usuario', 'id_rol']);
         return result;
     }
 
     // HTML del formulario de usuario. Cada acción lo adapta en createForm_ACCION.
+    /**
+     * devuelve el html común que cada acción adapta antes de mostrar el formulario
+     * @returns {string} plantilla html sin insertar todavía en el documento
+     */
     manual_form_creation() {
         return `
             <form id="form_iu" method="POST" enctype="multipart/form-data" novalidate>
@@ -235,12 +312,22 @@ class usuario extends AbstractEntidad {
             </form>`;
     }
 
+    /**
+     * normaliza los valores de una fila para rellenar el formulario de la entidad
+     * @param {RegistroEntidad} fila - valores originales de la fila seleccionada; vacío para una nueva entrada
+     * @returns {RegistroEntidad} valores de los campos y sus etiquetas de referencia
+     */
     valoresFormulario(fila) {
         const values = entity_access.normalizeRow(this.config, fila);
         return values;
     }
 
     // ADD usuario
+    /**
+     * prepara el formulario de alta con sus campos y referencias
+     * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
+     * @returns {Promise<boolean>} true si el formulario queda preparado o false si no se puede completar
+     */
     async createForm_ADD(fila = {}) {
         const context = entity_ui.openForm(this, 'ADD', this.valoresFormulario(fila), {
             hidden: [],
@@ -254,6 +341,11 @@ class usuario extends AbstractEntidad {
     }
 
     // EDIT usuario
+    /**
+     * rellena el formulario de edición y bloquea las claves que no se modifican
+     * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
+     * @returns {Promise<boolean>} true si el formulario queda preparado o false si no se puede completar
+     */
     async createForm_EDIT(fila = {}) {
         const context = entity_ui.openForm(this, 'EDIT', this.valoresFormulario(fila), {
             hidden: [],
@@ -273,6 +365,12 @@ class usuario extends AbstractEntidad {
     }
 
     // recupera la clave del registro elegido sin incorporarla a la tabla ni a la caché de referencias
+    /**
+     * recupera la contraseña del usuario elegido y la coloca en el input enmascarado
+     * no incorpora la contraseña a la tabla ni a la caché de referencias
+     * @param {ContextoFormulario} context - estado del formulario al que pertenece la operación
+     * @returns {Promise<boolean>} true si se carga; false si falla y debe bloquearse la edición
+     */
     async cargarContrasenaEdicion(context) {
         context.loading++;
         entity_ui.updateSubmit(context);
@@ -308,6 +406,11 @@ class usuario extends AbstractEntidad {
     }
 
     // SEARCH usuario
+    /**
+     * prepara el formulario de búsqueda con criterios parciales o vacíos
+     * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
+     * @returns {Promise<boolean>} true si el formulario queda preparado o false si no se puede completar
+     */
     async createForm_SEARCH(fila = {}) {
         const context = entity_ui.openForm(this, 'SEARCH', this.valoresFormulario(fila), {
             hidden: ['contrasena'],
@@ -321,6 +424,11 @@ class usuario extends AbstractEntidad {
     }
 
     // DELETE usuario
+    /**
+     * muestra los datos bloqueados y prepara la confirmación de borrado
+     * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
+     * @returns {Promise<boolean>} true si el formulario queda preparado o false si no se puede completar
+     */
     async createForm_DELETE(fila = {}) {
         const context = entity_ui.openForm(this, 'DELETE', this.valoresFormulario(fila), {
             hidden: ['contrasena'],
@@ -334,6 +442,11 @@ class usuario extends AbstractEntidad {
     }
 
     // SHOWCURRENT usuario
+    /**
+     * muestra los datos bloqueados sin ofrecer una operación de envío
+     * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
+     * @returns {Promise<boolean>} true si el formulario queda preparado o false si no se puede completar
+     */
     async createForm_SHOWCURRENT(fila = {}) {
         const context = entity_ui.openForm(this, 'SHOWCURRENT', this.valoresFormulario(fila), {
             hidden: ['contrasena'],
@@ -345,39 +458,85 @@ class usuario extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
+    /**
+     * solicita el alta mediante el coordinador compartido
+     * @returns {Promise<boolean>} resultado de la operación solicitada
+     */
     ADD() {
         return entity_ui.run(this, 'ADD');
     }
 
+    /**
+     * solicita la edición mediante el coordinador compartido
+     * @returns {Promise<boolean>} resultado de la operación solicitada
+     */
     EDIT() {
         return entity_ui.run(this, 'EDIT');
     }
 
+    /**
+     * solicita la búsqueda y presentación de datos de la entidad
+     * @returns {Promise<boolean>} resultado de la operación solicitada
+     */
     SEARCH() {
         return entity_ui.run(this, 'SEARCH');
     }
 
+    /**
+     * solicita el borrado mediante el coordinador compartido
+     * @returns {Promise<boolean>} resultado de la operación solicitada
+     */
     DELETE() {
         return entity_ui.run(this, 'DELETE');
     }
 
+    /**
+     * comprueba las claves originales necesarias para confirmar el borrado
+     * @returns {ResultadoSubmit} true si las claves están disponibles o un objeto con los errores
+     */
     DELETE_submit_usuario() {
         return entity_ui.validateKeys(this);
     }
 
+    /**
+     * confirma la consulta de detalle sin validar ni enviar datos editables
+     * @returns {boolean} true porque la acción solo presenta los datos
+     */
     SHOWCURRENT_submit_usuario() {
         return true;
     }
 
+    /**
+     * delega la presentación de las filas en el coordinador de tablas
+     * @param {RegistroEntidad[]} datos - filas recibidas del back que se quieren presentar
+     * @returns {void} no devuelve un valor
+     */
     crearTablaDatos(datos) {
         return entity_ui.renderTable(this, datos);
     }
+    /**
+     * alterna la visibilidad del atributo en las columnas de la tabla
+     * @param {string} atributo - nombre del atributo cuya presentación o visibilidad se adapta
+     * @returns {void} no devuelve un valor
+     */
     modificarcolumnasamostrar(atributo) {
         return entity_ui.toggleColumn(this, atributo);
     }
+    /**
+     * adapta la presentación de un atributo especial sin modificar su valor original
+     * @param {string} atributo - nombre del atributo cuya presentación o visibilidad se adapta
+     * @param {*} valor - valor del atributo recibido para su presentación
+     * @returns {string|number|Node} texto, identificador o enlace preparado para mostrar
+     */
     mostrarcambioatributo(atributo, valor) {
         return this.referenceLabels?.[atributo]?.get(String(valor)) || valor || '';
     }
+    /**
+     * mantiene el punto de entrada de la arquitectura para la presentación especial
+     * @param {string} atributo - nombre del atributo cuya presentación o visibilidad se adapta
+     * @param {*} valor - valor del atributo recibido para su presentación
+     * @returns {string|number|Node} valor adaptado por mostrarcambioatributo
+     */
     cambiarmostrarespecial(atributo, valor) {
         return this.mostrarcambioatributo(atributo, valor);
     }

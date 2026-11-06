@@ -1,4 +1,12 @@
+/**
+ * gestiona el catálogo de funcionalidades y sus formularios y validaciones
+ * @extends {AbstractEntidad}
+ */
 class funcionalidad extends AbstractEntidad {
+    /**
+     * configura la entidad funcionalidad y prepara su gestión fuera del modo test
+     * @param {string|null} [esTest=null] - con 'test' prepara la entidad sin abrir la gestión ni consultar el back
+     */
     constructor(esTest = null) {
         super();
         // Configuración propia de esta entidad. Core y Base no se modifican.
@@ -29,6 +37,10 @@ class funcionalidad extends AbstractEntidad {
     }
     // Devuelve el primer código de error o true si el campo es correcto.
     // ADD id_funcionalidad
+    /**
+     * valida id_funcionalidad para la acción add
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     ADD_id_funcionalidad_validation() {
         if (!this.validations.min_size('id_funcionalidad', 1)) {
             this.dom.mostrar_error_campo('id_funcionalidad', 'id_funcionalidad_min_size_ko');
@@ -46,6 +58,10 @@ class funcionalidad extends AbstractEntidad {
         return true;
     }
     // ADD nombre_funcionalidad
+    /**
+     * valida nombre_funcionalidad para la acción add
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     ADD_nombre_funcionalidad_validation() {
         if (!this.validations.min_size('nombre_funcionalidad', 5)) {
             this.dom.mostrar_error_campo('nombre_funcionalidad', 'nombre_funcionalidad_min_size_ko');
@@ -63,6 +79,10 @@ class funcionalidad extends AbstractEntidad {
         return true;
     }
     // ADD descrip_funcionalidad
+    /**
+     * valida descrip_funcionalidad para la acción add
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     ADD_descrip_funcionalidad_validation() {
         if (!this.validations.min_size('descrip_funcionalidad', 5)) {
             this.dom.mostrar_error_campo('descrip_funcionalidad', 'descrip_funcionalidad_min_size_ko');
@@ -81,19 +101,35 @@ class funcionalidad extends AbstractEntidad {
     }
     // EDIT comparte las restricciones de ADD, incluidos los identificadores.
     // EDIT id_funcionalidad
+    /**
+     * valida id_funcionalidad para la acción edit
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     EDIT_id_funcionalidad_validation() {
         return this.ADD_id_funcionalidad_validation();
     }
     // EDIT nombre_funcionalidad
+    /**
+     * valida nombre_funcionalidad para la acción edit
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     EDIT_nombre_funcionalidad_validation() {
         return this.ADD_nombre_funcionalidad_validation();
     }
     // EDIT descrip_funcionalidad
+    /**
+     * valida descrip_funcionalidad para la acción edit
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     EDIT_descrip_funcionalidad_validation() {
         return this.ADD_descrip_funcionalidad_validation();
     }
     // SEARCH permite fragmentos y campos vacíos; no exige tamaño mínimo.
     // SEARCH id_funcionalidad
+    /**
+     * valida el criterio de búsqueda de id_funcionalidad
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     SEARCH_id_funcionalidad_validation() {
         if (!this.validations.max_size('id_funcionalidad', 11)) {
             this.dom.mostrar_error_campo('id_funcionalidad', 'id_funcionalidad_max_size_ko');
@@ -107,6 +143,10 @@ class funcionalidad extends AbstractEntidad {
         return true;
     }
     // SEARCH nombre_funcionalidad
+    /**
+     * valida el criterio de búsqueda de nombre_funcionalidad
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     SEARCH_nombre_funcionalidad_validation() {
         if (!this.validations.max_size('nombre_funcionalidad', 48)) {
             this.dom.mostrar_error_campo('nombre_funcionalidad', 'nombre_funcionalidad_max_size_ko');
@@ -120,6 +160,10 @@ class funcionalidad extends AbstractEntidad {
         return true;
     }
     // SEARCH descrip_funcionalidad
+    /**
+     * valida el criterio de búsqueda de descrip_funcionalidad
+     * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
+     */
     SEARCH_descrip_funcionalidad_validation() {
         if (!this.validations.max_size('descrip_funcionalidad', 200)) {
             this.dom.mostrar_error_campo('descrip_funcionalidad', 'descrip_funcionalidad_max_size_ko');
@@ -133,22 +177,38 @@ class funcionalidad extends AbstractEntidad {
         return true;
     }
     // ADD formulario funcionalidad
+    /**
+     * comprueba todos los campos editables del formulario add
+     * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
+     */
     ADD_submit_funcionalidad() {
         const result = entity_ui.validateFields(this, 'ADD', ['nombre_funcionalidad', 'descrip_funcionalidad']);
         return result;
     }
     // EDIT formulario funcionalidad
+    /**
+     * comprueba todos los campos editables del formulario edit
+     * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
+     */
     EDIT_submit_funcionalidad() {
         const result = entity_ui.validateFields(this, 'EDIT', ['nombre_funcionalidad', 'descrip_funcionalidad']);
         return result;
     }
     // SEARCH formulario funcionalidad
+    /**
+     * comprueba todos los campos editables del formulario search
+     * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
+     */
     SEARCH_submit_funcionalidad() {
         const result = entity_ui.validateFields(this, 'SEARCH', ['id_funcionalidad', 'nombre_funcionalidad', 'descrip_funcionalidad']);
         return result;
     }
 
     // HTML del formulario de funcionalidad. Cada acción lo adapta en createForm_ACCION.
+    /**
+     * devuelve el html común que cada acción adapta antes de mostrar el formulario
+     * @returns {string} plantilla html sin insertar todavía en el documento
+     */
     manual_form_creation() {
         return `
             <form id="form_iu" method="POST" enctype="multipart/form-data" novalidate>
@@ -172,12 +232,22 @@ class funcionalidad extends AbstractEntidad {
             </form>`;
     }
 
+    /**
+     * normaliza los valores de una fila para rellenar el formulario de la entidad
+     * @param {RegistroEntidad} fila - valores originales de la fila seleccionada; vacío para una nueva entrada
+     * @returns {RegistroEntidad} valores de los campos y sus etiquetas de referencia
+     */
     valoresFormulario(fila) {
         const values = entity_access.normalizeRow(this.config, fila);
         return values;
     }
 
     // ADD funcionalidad
+    /**
+     * prepara el formulario de alta con sus campos y referencias
+     * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
+     * @returns {Promise<boolean>} true si el formulario queda preparado o false si no se puede completar
+     */
     async createForm_ADD(fila = {}) {
         const context = entity_ui.openForm(this, 'ADD', this.valoresFormulario(fila), {
             hidden: ['id_funcionalidad'],
@@ -190,6 +260,11 @@ class funcionalidad extends AbstractEntidad {
     }
 
     // EDIT funcionalidad
+    /**
+     * rellena el formulario de edición y bloquea las claves que no se modifican
+     * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
+     * @returns {Promise<boolean>} true si el formulario queda preparado o false si no se puede completar
+     */
     async createForm_EDIT(fila = {}) {
         const context = entity_ui.openForm(this, 'EDIT', this.valoresFormulario(fila), {
             hidden: [],
@@ -202,6 +277,11 @@ class funcionalidad extends AbstractEntidad {
     }
 
     // SEARCH funcionalidad
+    /**
+     * prepara el formulario de búsqueda con criterios parciales o vacíos
+     * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
+     * @returns {Promise<boolean>} true si el formulario queda preparado o false si no se puede completar
+     */
     async createForm_SEARCH(fila = {}) {
         const context = entity_ui.openForm(this, 'SEARCH', this.valoresFormulario(fila), {
             hidden: [],
@@ -214,6 +294,11 @@ class funcionalidad extends AbstractEntidad {
     }
 
     // DELETE funcionalidad
+    /**
+     * muestra los datos bloqueados y prepara la confirmación de borrado
+     * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
+     * @returns {Promise<boolean>} true si el formulario queda preparado o false si no se puede completar
+     */
     async createForm_DELETE(fila = {}) {
         const context = entity_ui.openForm(this, 'DELETE', this.valoresFormulario(fila), {
             hidden: [],
@@ -227,6 +312,11 @@ class funcionalidad extends AbstractEntidad {
     }
 
     // SHOWCURRENT funcionalidad
+    /**
+     * muestra los datos bloqueados sin ofrecer una operación de envío
+     * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
+     * @returns {Promise<boolean>} true si el formulario queda preparado o false si no se puede completar
+     */
     async createForm_SHOWCURRENT(fila = {}) {
         const context = entity_ui.openForm(this, 'SHOWCURRENT', this.valoresFormulario(fila), {
             hidden: [],
@@ -238,39 +328,85 @@ class funcionalidad extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
+    /**
+     * solicita el alta mediante el coordinador compartido
+     * @returns {Promise<boolean>} resultado de la operación solicitada
+     */
     ADD() {
         return entity_ui.run(this, 'ADD');
     }
 
+    /**
+     * solicita la edición mediante el coordinador compartido
+     * @returns {Promise<boolean>} resultado de la operación solicitada
+     */
     EDIT() {
         return entity_ui.run(this, 'EDIT');
     }
 
+    /**
+     * solicita la búsqueda y presentación de datos de la entidad
+     * @returns {Promise<boolean>} resultado de la operación solicitada
+     */
     SEARCH() {
         return entity_ui.run(this, 'SEARCH');
     }
 
+    /**
+     * solicita el borrado mediante el coordinador compartido
+     * @returns {Promise<boolean>} resultado de la operación solicitada
+     */
     DELETE() {
         return entity_ui.run(this, 'DELETE');
     }
 
+    /**
+     * comprueba las claves originales necesarias para confirmar el borrado
+     * @returns {ResultadoSubmit} true si las claves están disponibles o un objeto con los errores
+     */
     DELETE_submit_funcionalidad() {
         return entity_ui.validateKeys(this);
     }
 
+    /**
+     * confirma la consulta de detalle sin validar ni enviar datos editables
+     * @returns {boolean} true porque la acción solo presenta los datos
+     */
     SHOWCURRENT_submit_funcionalidad() {
         return true;
     }
 
+    /**
+     * delega la presentación de las filas en el coordinador de tablas
+     * @param {RegistroEntidad[]} datos - filas recibidas del back que se quieren presentar
+     * @returns {void} no devuelve un valor
+     */
     crearTablaDatos(datos) {
         return entity_ui.renderTable(this, datos);
     }
+    /**
+     * alterna la visibilidad del atributo en las columnas de la tabla
+     * @param {string} atributo - nombre del atributo cuya presentación o visibilidad se adapta
+     * @returns {void} no devuelve un valor
+     */
     modificarcolumnasamostrar(atributo) {
         return entity_ui.toggleColumn(this, atributo);
     }
+    /**
+     * adapta la presentación de un atributo especial sin modificar su valor original
+     * @param {string} atributo - nombre del atributo cuya presentación o visibilidad se adapta
+     * @param {*} valor - valor del atributo recibido para su presentación
+     * @returns {string|number|Node} texto, identificador o enlace preparado para mostrar
+     */
     mostrarcambioatributo(atributo, valor) {
         return valor ?? '';
     }
+    /**
+     * mantiene el punto de entrada de la arquitectura para la presentación especial
+     * @param {string} atributo - nombre del atributo cuya presentación o visibilidad se adapta
+     * @param {*} valor - valor del atributo recibido para su presentación
+     * @returns {string|number|Node} valor adaptado por mostrarcambioatributo
+     */
     cambiarmostrarespecial(atributo, valor) {
         return this.mostrarcambioatributo(atributo, valor);
     }
