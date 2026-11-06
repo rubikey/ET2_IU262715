@@ -9,7 +9,7 @@ class funcionalidad_accion extends AbstractEntidad {
      */
     constructor(esTest = null) {
         super();
-        // Configuración propia de esta entidad. Core y Base no se modifican.
+        // configuración propia de esta entidad. Core y Base no se modifican
         this.config = {
             "matrix": { "role": false },
             "referenceDisplay": [],
@@ -49,8 +49,8 @@ class funcionalidad_accion extends AbstractEntidad {
         };
         entity_ui.initialize(this, 'funcionalidad_accion', esTest);
     }
-    // Devuelve el primer código de error o true si el campo es correcto.
-    // ADD id_funcionalidad
+    // devuelve el primer código de error o true si el campo es correcto
+    // add id_funcionalidad
     /**
      * valida id_funcionalidad para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -71,7 +71,7 @@ class funcionalidad_accion extends AbstractEntidad {
         this.dom.mostrar_exito_campo('id_funcionalidad');
         return true;
     }
-    // ADD id_accion
+    // add id_accion
     /**
      * valida id_accion para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -92,8 +92,8 @@ class funcionalidad_accion extends AbstractEntidad {
         this.dom.mostrar_exito_campo('id_accion');
         return true;
     }
-    // EDIT comparte las restricciones de ADD, incluidos los identificadores.
-    // EDIT id_funcionalidad
+    // los validadores EDIT se conservan para las pruebas; la interfaz no edita asociaciones
+    // edit id_funcionalidad
     /**
      * valida id_funcionalidad para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -101,7 +101,7 @@ class funcionalidad_accion extends AbstractEntidad {
     EDIT_id_funcionalidad_validation() {
         return this.ADD_id_funcionalidad_validation();
     }
-    // EDIT id_accion
+    // edit id_accion
     /**
      * valida id_accion para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -109,8 +109,8 @@ class funcionalidad_accion extends AbstractEntidad {
     EDIT_id_accion_validation() {
         return this.ADD_id_accion_validation();
     }
-    // SEARCH selecciona IDs completos; el vacío permite no filtrar por el campo.
-    // SEARCH id_funcionalidad
+    // search selecciona IDs completos; el vacío permite no filtrar por el campo
+    // search id_funcionalidad
     /**
      * valida el criterio de búsqueda de id_funcionalidad
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -128,7 +128,7 @@ class funcionalidad_accion extends AbstractEntidad {
         this.dom.mostrar_exito_campo('id_funcionalidad');
         return true;
     }
-    // SEARCH id_accion
+    // search id_accion
     /**
      * valida el criterio de búsqueda de id_accion
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -148,7 +148,8 @@ class funcionalidad_accion extends AbstractEntidad {
     }
     // compatibilidad: comprobación de campos de add
     /**
-     * comprueba todos los campos editables del formulario add
+     * conserva la comprobación de campos de add para llamadas de compatibilidad
+     * la interfaz actual asigna relaciones desde las casillas de la matriz
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
      */
     ADD_submit_funcionalidad_accion() {
@@ -196,7 +197,7 @@ class funcionalidad_accion extends AbstractEntidad {
             </form>`;
     }
 
-    // ADD funcionalidad_accion
+    // add funcionalidad_accion
     /**
      * mantiene el punto de entrada y dirige al usuario a la matriz de relaciones
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -217,7 +218,7 @@ class funcionalidad_accion extends AbstractEntidad {
         return this.createForm_ADD(fila);
     }
 
-    // SEARCH funcionalidad_accion
+    // search funcionalidad_accion
     /**
      * abre el modal de filtros de la matriz activa
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada

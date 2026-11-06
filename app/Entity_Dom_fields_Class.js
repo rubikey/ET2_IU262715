@@ -2,7 +2,7 @@
  * @typedef {'ADD'|'EDIT'|'SEARCH'|'DELETE'|'SHOWCURRENT'} AccionFormulario
  */
 /**
- * @typedef {true|string} git ResultadoCampo
+ * @typedef {true|string} ResultadoCampo
  */
 /**
  * @typedef {boolean|Object<string, true|string>} ResultadoSubmit
@@ -106,7 +106,7 @@
  */
 
 // contiene tres bloques: entity_dom_fields (interfaz), entity_access (datos) y entity_ui (coordinación)
-// DOM de la aplicación: crear, consultar y modificar la interfaz sin alterar Core ni Base
+// dom de la aplicación: crear, consultar y modificar la interfaz sin alterar Core ni Base
 /**
  * adapta los componentes y la presentación de la interfaz sin modificar las clases de core
  * @extends {dom_fields}
@@ -165,6 +165,7 @@ class entity_dom_fields extends dom_fields {
     // aplica en un único lugar los colores, la accesibilidad y el mensaje de un campo
     /**
      * centraliza el mensaje, las clases visuales y aria-invalid de un campo
+     * usa la traducción de SEARCH si existe, sin cambiar el código devuelto por el validador
      * @param {string} id - id del campo o elemento sobre el que se actúa
      * @param {boolean} invalid - indica si el campo debe marcarse como incorrecto
      * @param {string} [codigo=''] - código del mensaje que debe mostrarse
@@ -177,7 +178,10 @@ class entity_dom_fields extends dom_fields {
             field.classList.toggle('et2-invalid', invalid); field.classList.toggle('et2-valid', !invalid);
         }
         if (span) span.style.display = invalid ? 'block' : 'none';
-        if (message) { message.className = invalid ? codigo : ''; message.textContent = invalid ? entity_ui.t(codigo) : ''; }
+        // adapta solo el texto a SEARCH; el validador conserva su código de error
+        const searchCode = 'SEARCH_' + codigo;
+        const displayCode = field?.form?.dataset.action === 'SEARCH' && Object.hasOwn(entity_ui.dictionary(), searchCode) ? searchCode : codigo;
+        if (message) { message.className = invalid ? displayCode : ''; message.textContent = invalid ? entity_ui.t(displayCode) : ''; }
     }
     /**
      * abre el modal de error y conserva tanto la explicación como el código literal recibido
@@ -316,7 +320,7 @@ class entity_dom_fields extends dom_fields {
         }
     }
 
-    // Consultas y operaciones de campos utilizadas por las entidades.
+    // consultas y operaciones de campos utilizadas por las entidades
     /**
      * localiza un elemento dentro del formulario indicado o en el documento actual
      * @param {string} id - id del campo o elemento sobre el que se actúa
@@ -477,6 +481,7 @@ class entity_dom_fields extends dom_fields {
     prepararFormulario(entity, action, values, policy) {
         document.getElementById('contenedor_IU_form').innerHTML = entity.manual_form_creation();
         const form = document.getElementById('form_iu');
+        form.dataset.action = action;
         const context = { form, action, values, policy, references: {}, loading: 0, unavailable: new Set(), referenceError: false, ready: false };
         entity.formContext = context;
         entity.formAction = action;
@@ -774,7 +779,7 @@ class entity_dom_fields extends dom_fields {
         target.focus(); return true;
     }
 
-    // Presentación de pruebas. La ejecución continúa en entity_Test_Data y Data_Test.
+    // presentación de pruebas. La ejecución continúa en entity_Test_Data y Data_Test
     /**
      * aplica el idioma seleccionado a los elementos traducibles del documento
      * @returns {void} no devuelve un valor
@@ -844,7 +849,7 @@ class entity_dom_fields extends dom_fields {
         doc.body.append(table); return true;
     }
 
-    // Arranque de la interfaz y estilos, siempre dentro de la clase DOM.
+    // arranque de la interfaz y estilos, siempre dentro de la clase DOM
     /**
      * añade una única hoja de estilos de la aplicación sin modificar el css del profesor
      * @returns {void} no devuelve un valor
@@ -895,7 +900,7 @@ class entity_dom_fields extends dom_fields {
     }
 }
 
-// Adaptación de respuestas y peticiones. No se convierten objetos en identificadores mediante String().
+// adaptación de respuestas y peticiones. No se convierten objetos en identificadores mediante String()
 /**
  * adapta las respuestas del back y centraliza peticiones, catálogos y paginación
  * @extends {ExternalAccess}
@@ -1061,9 +1066,9 @@ class entity_access extends ExternalAccess {
     }
 }
 
-// Operaciones compartidas. Las políticas, HTML y campos a validar se declaran en cada entidad.
-// Coordinación compartida: no crea elementos ni modifica HTML/CSS.
-// Se declara en este archivo ya cargado por el index del profesor, junto con el adaptador de acceso.
+// operaciones compartidas. Las políticas, HTML y campos a validar se declaran en cada entidad
+// coordinación compartida: no crea elementos ni modifica HTML/CSS
+// se declara en este archivo ya cargado por el index del profesor, junto con el adaptador de acceso
 /**
  * coordina las operaciones compartidas de las entidades y delega la interfaz en el dom
  */

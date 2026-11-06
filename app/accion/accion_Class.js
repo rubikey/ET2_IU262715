@@ -9,7 +9,7 @@ class accion extends AbstractEntidad {
      */
     constructor(esTest = null) {
         super();
-        // Configuración propia de esta entidad. Core y Base no se modifican.
+        // constructor propio de esta entidad
         this.config = {
             "keys": [
                 "id_accion"
@@ -35,8 +35,8 @@ class accion extends AbstractEntidad {
         };
         entity_ui.initialize(this, 'accion', esTest);
     }
-    // Devuelve el primer código de error o true si el campo es correcto.
-    // ADD id_accion
+    // devuelve el primer código de error o true si el campo es correcto
+    // add id_accion
     /**
      * valida id_accion para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -57,7 +57,7 @@ class accion extends AbstractEntidad {
         this.dom.mostrar_exito_campo('id_accion');
         return true;
     }
-    // ADD nombre_accion
+    // add nombre_accion
     /**
      * valida nombre_accion para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -78,7 +78,7 @@ class accion extends AbstractEntidad {
         this.dom.mostrar_exito_campo('nombre_accion');
         return true;
     }
-    // ADD descrip_accion
+    // add descrip_accion
     /**
      * valida descrip_accion para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -99,8 +99,8 @@ class accion extends AbstractEntidad {
         this.dom.mostrar_exito_campo('descrip_accion');
         return true;
     }
-    // EDIT comparte las restricciones de ADD, incluidos los identificadores.
-    // EDIT id_accion
+    // edit comparte las restricciones de ADD, incluidos los identificadores
+    // edit id_accion
     /**
      * valida id_accion para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -108,7 +108,7 @@ class accion extends AbstractEntidad {
     EDIT_id_accion_validation() {
         return this.ADD_id_accion_validation();
     }
-    // EDIT nombre_accion
+    // edit nombre_accion
     /**
      * valida nombre_accion para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -116,7 +116,7 @@ class accion extends AbstractEntidad {
     EDIT_nombre_accion_validation() {
         return this.ADD_nombre_accion_validation();
     }
-    // EDIT descrip_accion
+    // edit descrip_accion
     /**
      * valida descrip_accion para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -124,8 +124,8 @@ class accion extends AbstractEntidad {
     EDIT_descrip_accion_validation() {
         return this.ADD_descrip_accion_validation();
     }
-    // SEARCH permite fragmentos y campos vacíos; no exige tamaño mínimo.
-    // SEARCH id_accion
+    // search permite fragmentos y campos vacíos; no exige tamaño mínimo
+    // search id_accion
     /**
      * valida el criterio de búsqueda de id_accion
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -142,7 +142,7 @@ class accion extends AbstractEntidad {
         this.dom.mostrar_exito_campo('id_accion');
         return true;
     }
-    // SEARCH nombre_accion
+    // search nombre_accion
     /**
      * valida el criterio de búsqueda de nombre_accion
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -159,7 +159,7 @@ class accion extends AbstractEntidad {
         this.dom.mostrar_exito_campo('nombre_accion');
         return true;
     }
-    // SEARCH descrip_accion
+    // search descrip_accion
     /**
      * valida el criterio de búsqueda de descrip_accion
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -176,7 +176,7 @@ class accion extends AbstractEntidad {
         this.dom.mostrar_exito_campo('descrip_accion');
         return true;
     }
-    // ADD formulario accion
+    // add formulario accion
     /**
      * comprueba todos los campos editables del formulario add
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
@@ -185,7 +185,7 @@ class accion extends AbstractEntidad {
         const result = entity_ui.validateFields(this, 'ADD', ['nombre_accion', 'descrip_accion']);
         return result;
     }
-    // EDIT formulario accion
+    // edit formulario accion
     /**
      * comprueba todos los campos editables del formulario edit
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
@@ -194,7 +194,7 @@ class accion extends AbstractEntidad {
         const result = entity_ui.validateFields(this, 'EDIT', ['nombre_accion', 'descrip_accion']);
         return result;
     }
-    // SEARCH formulario accion
+    // search formulario accion
     /**
      * comprueba todos los campos editables del formulario search
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
@@ -204,7 +204,7 @@ class accion extends AbstractEntidad {
         return result;
     }
 
-    // HTML del formulario de accion. Cada acción lo adapta en createForm_ACCION.
+    // html del formulario de accion. Cada acción lo adapta en createForm_ACCION
     /**
      * devuelve el html común que cada acción adapta antes de mostrar el formulario
      * @returns {string} plantilla html sin insertar todavía en el documento
@@ -242,7 +242,7 @@ class accion extends AbstractEntidad {
         return values;
     }
 
-    // ADD accion
+    // add accion
     /**
      * prepara el formulario de alta con sus campos y referencias
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -259,7 +259,7 @@ class accion extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // EDIT accion
+    // edit accion
     /**
      * rellena el formulario de edición y bloquea las claves que no se modifican
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -276,7 +276,7 @@ class accion extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // SEARCH accion
+    // search accion
     /**
      * prepara el formulario de búsqueda con criterios parciales o vacíos
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -293,7 +293,7 @@ class accion extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // DELETE accion
+    // delete accion
     /**
      * muestra los datos bloqueados y prepara la confirmación de borrado
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -311,7 +311,7 @@ class accion extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // SHOWCURRENT accion
+    // showcurrent accion
     /**
      * muestra los datos bloqueados sin ofrecer una operación de envío
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada

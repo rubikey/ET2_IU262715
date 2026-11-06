@@ -9,7 +9,7 @@ class funcionalidad extends AbstractEntidad {
      */
     constructor(esTest = null) {
         super();
-        // Configuración propia de esta entidad. Core y Base no se modifican.
+        // configuración propia de esta entidad
         this.config = {
             "keys": [
                 "id_funcionalidad"
@@ -35,8 +35,8 @@ class funcionalidad extends AbstractEntidad {
         };
         entity_ui.initialize(this, 'funcionalidad', esTest);
     }
-    // Devuelve el primer código de error o true si el campo es correcto.
-    // ADD id_funcionalidad
+    // devuelve el primer código de error o true si el campo es correcto
+    // add id_funcionalidad
     /**
      * valida id_funcionalidad para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -57,7 +57,7 @@ class funcionalidad extends AbstractEntidad {
         this.dom.mostrar_exito_campo('id_funcionalidad');
         return true;
     }
-    // ADD nombre_funcionalidad
+    // add nombre_funcionalidad
     /**
      * valida nombre_funcionalidad para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -78,7 +78,7 @@ class funcionalidad extends AbstractEntidad {
         this.dom.mostrar_exito_campo('nombre_funcionalidad');
         return true;
     }
-    // ADD descrip_funcionalidad
+    // add descrip_funcionalidad
     /**
      * valida descrip_funcionalidad para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -99,8 +99,8 @@ class funcionalidad extends AbstractEntidad {
         this.dom.mostrar_exito_campo('descrip_funcionalidad');
         return true;
     }
-    // EDIT comparte las restricciones de ADD, incluidos los identificadores.
-    // EDIT id_funcionalidad
+    // edit comparte las restricciones de ADD, incluidos los identificadores
+    // edit id_funcionalidad
     /**
      * valida id_funcionalidad para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -108,7 +108,7 @@ class funcionalidad extends AbstractEntidad {
     EDIT_id_funcionalidad_validation() {
         return this.ADD_id_funcionalidad_validation();
     }
-    // EDIT nombre_funcionalidad
+    // edit nombre_funcionalidad
     /**
      * valida nombre_funcionalidad para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -116,7 +116,7 @@ class funcionalidad extends AbstractEntidad {
     EDIT_nombre_funcionalidad_validation() {
         return this.ADD_nombre_funcionalidad_validation();
     }
-    // EDIT descrip_funcionalidad
+    // edit descrip_funcionalidad
     /**
      * valida descrip_funcionalidad para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -124,8 +124,8 @@ class funcionalidad extends AbstractEntidad {
     EDIT_descrip_funcionalidad_validation() {
         return this.ADD_descrip_funcionalidad_validation();
     }
-    // SEARCH permite fragmentos y campos vacíos; no exige tamaño mínimo.
-    // SEARCH id_funcionalidad
+    // search permite fragmentos y campos vacíos; no exige tamaño mínimo
+    // search id_funcionalidad
     /**
      * valida el criterio de búsqueda de id_funcionalidad
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -142,7 +142,7 @@ class funcionalidad extends AbstractEntidad {
         this.dom.mostrar_exito_campo('id_funcionalidad');
         return true;
     }
-    // SEARCH nombre_funcionalidad
+    // search nombre_funcionalidad
     /**
      * valida el criterio de búsqueda de nombre_funcionalidad
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -159,7 +159,7 @@ class funcionalidad extends AbstractEntidad {
         this.dom.mostrar_exito_campo('nombre_funcionalidad');
         return true;
     }
-    // SEARCH descrip_funcionalidad
+    // search descrip_funcionalidad
     /**
      * valida el criterio de búsqueda de descrip_funcionalidad
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -176,7 +176,7 @@ class funcionalidad extends AbstractEntidad {
         this.dom.mostrar_exito_campo('descrip_funcionalidad');
         return true;
     }
-    // ADD formulario funcionalidad
+    // add formulario funcionalidad
     /**
      * comprueba todos los campos editables del formulario add
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
@@ -185,7 +185,7 @@ class funcionalidad extends AbstractEntidad {
         const result = entity_ui.validateFields(this, 'ADD', ['nombre_funcionalidad', 'descrip_funcionalidad']);
         return result;
     }
-    // EDIT formulario funcionalidad
+    // edit formulario funcionalidad
     /**
      * comprueba todos los campos editables del formulario edit
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
@@ -194,7 +194,7 @@ class funcionalidad extends AbstractEntidad {
         const result = entity_ui.validateFields(this, 'EDIT', ['nombre_funcionalidad', 'descrip_funcionalidad']);
         return result;
     }
-    // SEARCH formulario funcionalidad
+    // search formulario funcionalidad
     /**
      * comprueba todos los campos editables del formulario search
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
@@ -204,7 +204,7 @@ class funcionalidad extends AbstractEntidad {
         return result;
     }
 
-    // HTML del formulario de funcionalidad. Cada acción lo adapta en createForm_ACCION.
+    // html del formulario de funcionalidad. Cada acción lo adapta en createForm_ACCION
     /**
      * devuelve el html común que cada acción adapta antes de mostrar el formulario
      * @returns {string} plantilla html sin insertar todavía en el documento
@@ -242,7 +242,7 @@ class funcionalidad extends AbstractEntidad {
         return values;
     }
 
-    // ADD funcionalidad
+    // add funcionalidad
     /**
      * prepara el formulario de alta con sus campos y referencias
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -259,7 +259,7 @@ class funcionalidad extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // EDIT funcionalidad
+    // edit funcionalidad
     /**
      * rellena el formulario de edición y bloquea las claves que no se modifican
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -276,7 +276,7 @@ class funcionalidad extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // SEARCH funcionalidad
+    // search funcionalidad
     /**
      * prepara el formulario de búsqueda con criterios parciales o vacíos
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -293,7 +293,7 @@ class funcionalidad extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // DELETE funcionalidad
+    // delete funcionalidad
     /**
      * muestra los datos bloqueados y prepara la confirmación de borrado
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -311,7 +311,7 @@ class funcionalidad extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // SHOWCURRENT funcionalidad
+    // showcurrent funcionalidad
     /**
      * muestra los datos bloqueados sin ofrecer una operación de envío
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada

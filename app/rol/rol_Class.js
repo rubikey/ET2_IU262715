@@ -9,7 +9,7 @@ class rol extends AbstractEntidad {
      */
     constructor(esTest = null) {
         super();
-        // Configuración propia de esta entidad. Core y Base no se modifican.
+        // configuración propia de esta entidad. Core y Base no se modifican
         this.config = {
             "keys": [
                 "id_rol"
@@ -35,8 +35,8 @@ class rol extends AbstractEntidad {
         };
         entity_ui.initialize(this, 'rol', esTest);
     }
-    // Devuelve el primer código de error o true si el campo es correcto.
-    // ADD id_rol
+    // devuelve el primer código de error o true si el campo es correcto
+    // add id_rol
     /**
      * valida id_rol para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -57,7 +57,7 @@ class rol extends AbstractEntidad {
         this.dom.mostrar_exito_campo('id_rol');
         return true;
     }
-    // ADD rol_name
+    // add rol_name
     /**
      * valida rol_name para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -78,7 +78,7 @@ class rol extends AbstractEntidad {
         this.dom.mostrar_exito_campo('rol_name');
         return true;
     }
-    // ADD rol_description
+    // add rol_description
     /**
      * valida rol_description para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -99,8 +99,8 @@ class rol extends AbstractEntidad {
         this.dom.mostrar_exito_campo('rol_description');
         return true;
     }
-    // EDIT comparte las restricciones de ADD, incluidos los identificadores.
-    // EDIT id_rol
+    // edit comparte las restricciones de ADD, incluidos los identificadores
+    // edit id_rol
     /**
      * valida id_rol para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -108,7 +108,7 @@ class rol extends AbstractEntidad {
     EDIT_id_rol_validation() {
         return this.ADD_id_rol_validation();
     }
-    // EDIT rol_name
+    // edit rol_name
     /**
      * valida rol_name para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -116,7 +116,7 @@ class rol extends AbstractEntidad {
     EDIT_rol_name_validation() {
         return this.ADD_rol_name_validation();
     }
-    // EDIT rol_description
+    // edit rol_description
     /**
      * valida rol_description para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -124,8 +124,8 @@ class rol extends AbstractEntidad {
     EDIT_rol_description_validation() {
         return this.ADD_rol_description_validation();
     }
-    // SEARCH permite fragmentos y campos vacíos; no exige tamaño mínimo.
-    // SEARCH id_rol
+    // search permite fragmentos y campos vacíos; no exige tamaño mínimo
+    // search id_rol
     /**
      * valida el criterio de búsqueda de id_rol
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -142,7 +142,7 @@ class rol extends AbstractEntidad {
         this.dom.mostrar_exito_campo('id_rol');
         return true;
     }
-    // SEARCH rol_name
+    // search rol_name
     /**
      * valida el criterio de búsqueda de rol_name
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -159,7 +159,7 @@ class rol extends AbstractEntidad {
         this.dom.mostrar_exito_campo('rol_name');
         return true;
     }
-    // SEARCH rol_description
+    // search rol_description
     /**
      * valida el criterio de búsqueda de rol_description
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -176,7 +176,7 @@ class rol extends AbstractEntidad {
         this.dom.mostrar_exito_campo('rol_description');
         return true;
     }
-    // ADD formulario rol
+    // add formulario rol
     /**
      * comprueba todos los campos editables del formulario add
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
@@ -185,7 +185,7 @@ class rol extends AbstractEntidad {
         const result = entity_ui.validateFields(this, 'ADD', ['rol_name', 'rol_description']);
         return result;
     }
-    // EDIT formulario rol
+    // edit formulario rol
     /**
      * comprueba todos los campos editables del formulario edit
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
@@ -194,7 +194,7 @@ class rol extends AbstractEntidad {
         const result = entity_ui.validateFields(this, 'EDIT', ['rol_name', 'rol_description']);
         return result;
     }
-    // SEARCH formulario rol
+    // search formulario rol
     /**
      * comprueba todos los campos editables del formulario search
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
@@ -204,7 +204,7 @@ class rol extends AbstractEntidad {
         return result;
     }
 
-    // HTML del formulario de rol. Cada acción lo adapta en createForm_ACCION.
+    // html del formulario de rol. Cada acción lo adapta en createForm_ACCION
     /**
      * devuelve el html común que cada acción adapta antes de mostrar el formulario
      * @returns {string} plantilla html sin insertar todavía en el documento
@@ -242,7 +242,7 @@ class rol extends AbstractEntidad {
         return values;
     }
 
-    // ADD rol
+    // add rol
     /**
      * prepara el formulario de alta con sus campos y referencias
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -259,7 +259,7 @@ class rol extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // EDIT rol
+    // edit rol
     /**
      * rellena el formulario de edición y bloquea las claves que no se modifican
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -276,7 +276,7 @@ class rol extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // SEARCH rol
+    // search rol
     /**
      * prepara el formulario de búsqueda con criterios parciales o vacíos
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -293,7 +293,7 @@ class rol extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // DELETE rol
+    // delete rol
     /**
      * muestra los datos bloqueados y prepara la confirmación de borrado
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -311,7 +311,7 @@ class rol extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // SHOWCURRENT rol
+    // showcurrent rol
     /**
      * muestra los datos bloqueados sin ofrecer una operación de envío
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada

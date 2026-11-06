@@ -1,4 +1,4 @@
-// Solo se redefinen métodos ya existentes en Validations.
+// solo se redefinen métodos ya existentes en Validations
 /**
  * amplía las validaciones existentes para textarea, select, password y tel
  * @extends {Validations}

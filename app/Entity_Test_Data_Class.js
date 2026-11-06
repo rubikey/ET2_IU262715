@@ -1,4 +1,4 @@
-// Ejecuta las pruebas con Data_Test y delega toda su presentación a entity_dom_fields.
+// ejecuta las pruebas con Data_Test y delega toda su presentación a entity_dom_fields
 /**
  * ejecuta la batería de una entidad y presenta sus resultados en una ventana nueva
  * @extends {Data_Test}
@@ -16,13 +16,17 @@ class entity_Test_Data extends Data_Test {
     data_test_class() {
         this.dom = new entity_dom_fields();
         this.dom.prepararIdioma();
-        // Abrir primero mantiene la ventana asociada al clic del usuario.
+        // abrir primero mantiene la ventana asociada al clic del usuario
         const popup = this.dom.abrirVentanaPruebas();
         const saved = this.dom.apartarFormularioPruebas();
         try {
             this.resultados = super.data_test_data();
             for (const result of this.resultados) {
                 if (result.resultadoprueba === true) result.traduccionError = entity_ui.t('ui_test_valid_value');
+                else if (result.accion === 'SEARCH') {
+                    const searchCode = 'SEARCH_' + result.resultadoprueba;
+                    if (Object.hasOwn(entity_ui.dictionary(), searchCode)) result.traduccionError = entity_ui.t(searchCode);
+                }
             }
         } finally {
             this.dom.restaurarFormularioPruebas(saved);

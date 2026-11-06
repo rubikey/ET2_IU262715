@@ -22,7 +22,7 @@ class persona extends AbstractEntidad {
             "keys": [
                 "dni"
             ],
-            // columnas visibles inicialmente; al usuario s e le permite cambiar la selección
+            // columnas visibles inicialmente; al usuario se le permite cambiar la selección
             "columns": [
                 "dni",
                 "nombre_persona",
@@ -249,10 +249,10 @@ class persona extends AbstractEntidad {
 
 
 
-    // add y EDIT comparten restricciones en los siguientes campos: se reutiliza la validación,
-    // no una operación de alta. El formulario EDIT bloquea el DNI y no lo incluye en su submit
+    // add y edit comparten restricciones en los siguientes campos: se reutiliza la validación,
+    // no una operación de alta; el formulario EDIT bloquea el DNI y no lo incluye en su submit
     
-    // EDIT dni
+    // edit dni
     /**
      * valida dni para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -469,8 +469,8 @@ class persona extends AbstractEntidad {
 
 
     // foto_persona utiliza input, contiene el nombre de la foto almacenada
-    // nuevo_foto_persona utiliza file en las tres acciones, en el formulario solo contemplamos
-    // add/EDIT
+    // nuevo_foto_persona es file en ADD y EDIT; su validador SEARCH se conserva para las pruebas
+    // el formulario SEARCH oculta ese campo y filtra por el nombre guardado en foto_persona
     // valida el nombre guardado en un input: entre 5 y 15 caracteres, incluida la extensión jpg/jpeg
     /**
      * comprueba longitud y formato del nombre de foto almacenado
@@ -525,7 +525,7 @@ class persona extends AbstractEntidad {
             this.validations.format_name_file(id, /\.jpe?g$/i))) {
             return error('type_file');
         }
-        // exige 2MiB
+        // permite como máximo 2 MiB (2097152 bytes)
         if (!this.validations.max_size_file(id, 2097152)) {
             return error('max_size_file');
         }
@@ -618,8 +618,8 @@ class persona extends AbstractEntidad {
     // submits: comprueban el conjunto de campos de la acción antes de permitir el envío
     // validateFields llama a ACCION_campo_validation() para cada campo de la lista
     // devuelve true si todos son correctos; si hay fallos, devuelve un objeto con sus códigos
-    // estas listas indican qué validar.
-    // Los campos a enviar se declaran en send de cada createForm
+    // estas listas indican qué validar
+    // los campos a enviar se declaran en send de cada createForm
     // el envío posterior lo coordina entity_ui.write(), que utiliza entity_access para la petición
 
     // add formulario persona
@@ -729,7 +729,7 @@ class persona extends AbstractEntidad {
         return values;
     }
 
-    // creación de lso FORMULARIOS: combinan el HTML común con los valores y la política de cada acción
+    // creación de los formularios: combinan el HTML común con los valores y la política de cada acción
     // hidden: campos ocultos; readOnly: campos bloqueados; send: datos que se enviarán al BACK
     // submit habilita la operación; note identifica un mensaje traducible de ayuda o confirmación
     // openForm devuelve el contexto del formulario; finishForm termina su preparación y activa la interfaz
@@ -827,12 +827,12 @@ class persona extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // decide cuándo ofrecer el enlace a la foto guardada; this.dom construye y modifica el enlace 
-    // El enlace será visible cuando se cumplan las dos condiciones:
+    // decide cuándo ofrecer el enlace a la foto guardada; this.dom construye y modifica el enlace
+    // el enlace será visible cuando se cumplan las dos condiciones:
         // 1 la acción sea EDIT, DELETE o SHOWCURRENT
         // 2 el registro tenga un nombre de foto guardado
 
-    // delega en la clase DOM la preparación del enlace; utiliza la dirección base y el nombre del archivo para construir su URL, 
+    // delega en la clase DOM la preparación del enlace; utiliza la dirección base y el nombre del archivo para construir su URL,
     // y lo muestra u oculta según visible
     /**
      * configura el enlace a la foto existente según la acción y el valor almacenado

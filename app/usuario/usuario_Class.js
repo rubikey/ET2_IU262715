@@ -9,7 +9,7 @@ class usuario extends AbstractEntidad {
      */
     constructor(esTest = null) {
         super();
-        // Configuración propia de esta entidad. Core y Base no se modifican.
+        // configuración propia de esta entidad. Core y Base no se modifican
         this.config = {
             "special": ["id_rol"],
             "columnLabels": {"id_rol": "ui_role"},
@@ -44,8 +44,8 @@ class usuario extends AbstractEntidad {
         };
         entity_ui.initialize(this, 'usuario', esTest);
     }
-    // Devuelve el primer código de error o true si el campo es correcto.
-    // ADD dni
+    // devuelve el primer código de error o true si el campo es correcto
+    // add dni
     /**
      * valida dni para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -70,7 +70,7 @@ class usuario extends AbstractEntidad {
         this.dom.mostrar_exito_campo('dni');
         return true;
     }
-    // personalized: correspondencia entre los ocho números y la letra del DNI.
+    // personalized: correspondencia entre los ocho números y la letra del DNI
     /**
      * comprueba la correspondencia entre los ocho números del dni y su letra de control
      * @param {string} id - id del campo o elemento sobre el que se actúa
@@ -83,7 +83,7 @@ class usuario extends AbstractEntidad {
         const numero = Number(dni.slice(0, 8));
         return letras[numero % 23] === dni[8];
     }
-    // ADD usuario
+    // add usuario
     /**
      * valida usuario para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -104,7 +104,7 @@ class usuario extends AbstractEntidad {
         this.dom.mostrar_exito_campo('usuario');
         return true;
     }
-    // ADD contrasena
+    // add contrasena
     /**
      * valida contrasena para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -125,7 +125,7 @@ class usuario extends AbstractEntidad {
         this.dom.mostrar_exito_campo('contrasena');
         return true;
     }
-    // ADD id_rol
+    // add id_rol
     /**
      * valida id_rol para la acción add
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -146,8 +146,8 @@ class usuario extends AbstractEntidad {
         this.dom.mostrar_exito_campo('id_rol');
         return true;
     }
-    // EDIT comparte las restricciones de ADD, incluidos los identificadores.
-    // EDIT dni
+    // edit comparte las restricciones de ADD, incluidos los identificadores
+    // edit dni
     /**
      * valida dni para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -155,7 +155,7 @@ class usuario extends AbstractEntidad {
     EDIT_dni_validation() {
         return this.ADD_dni_validation();
     }
-    // EDIT usuario
+    // edit usuario
     /**
      * valida usuario para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -163,16 +163,16 @@ class usuario extends AbstractEntidad {
     EDIT_usuario_validation() {
         return this.ADD_usuario_validation();
     }
-    // EDIT contrasena
+    // edit contrasena
     /**
      * valida contrasena para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
      */
     EDIT_contrasena_validation() {
-        // El BACK exige contraseña también en EDIT. Misma regla dentro y fuera de las pruebas.
+        // el BACK exige contraseña también en EDIT. Misma regla dentro y fuera de las pruebas
         return this.ADD_contrasena_validation();
     }
-    // EDIT id_rol
+    // edit id_rol
     /**
      * valida id_rol para la acción edit
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -180,8 +180,8 @@ class usuario extends AbstractEntidad {
     EDIT_id_rol_validation() {
         return this.ADD_id_rol_validation();
     }
-    // SEARCH permite fragmentos y campos vacíos; no exige tamaño mínimo.
-    // SEARCH dni
+    // search permite fragmentos y campos vacíos; no exige tamaño mínimo
+    // search dni
     /**
      * valida el criterio de búsqueda de dni
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -198,7 +198,7 @@ class usuario extends AbstractEntidad {
         this.dom.mostrar_exito_campo('dni');
         return true;
     }
-    // SEARCH usuario
+    // search usuario
     /**
      * valida el criterio de búsqueda de usuario
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -215,7 +215,7 @@ class usuario extends AbstractEntidad {
         this.dom.mostrar_exito_campo('usuario');
         return true;
     }
-    // SEARCH contrasena
+    // search contrasena
     /**
      * valida el criterio de búsqueda de contrasena
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -232,7 +232,7 @@ class usuario extends AbstractEntidad {
         this.dom.mostrar_exito_campo('contrasena');
         return true;
     }
-    // SEARCH id_rol
+    // search id_rol
     /**
      * valida el criterio de búsqueda de id_rol
      * @returns {ResultadoCampo} true si el valor es correcto o el primer código de error
@@ -243,7 +243,7 @@ class usuario extends AbstractEntidad {
             this.dom.mostrar_error_campo('id_rol', 'id_rol_max_size_ko');
             return 'id_rol_max_size_ko';
         }
-        // El vacío permite todos los roles; los demás valores son IDs completos.
+        // el vacío permite todos los roles; los demás valores son IDs completos
         if (valor !== '' && !this.validations.format('id_rol', /^[0-9]+$/)) {
             this.dom.mostrar_error_campo('id_rol', 'id_rol_format_ko');
             return 'id_rol_format_ko';
@@ -251,7 +251,7 @@ class usuario extends AbstractEntidad {
         this.dom.mostrar_exito_campo('id_rol');
         return true;
     }
-    // ADD formulario usuario
+    // add formulario usuario
     /**
      * comprueba todos los campos editables del formulario add
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
@@ -260,7 +260,7 @@ class usuario extends AbstractEntidad {
         const result = entity_ui.validateFields(this, 'ADD', ['dni', 'usuario', 'contrasena', 'id_rol']);
         return result;
     }
-    // EDIT formulario usuario
+    // edit formulario usuario
     /**
      * comprueba todos los campos editables del formulario edit
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
@@ -269,7 +269,7 @@ class usuario extends AbstractEntidad {
         const result = entity_ui.validateFields(this, 'EDIT', ['usuario', 'contrasena', 'id_rol']);
         return result;
     }
-    // SEARCH formulario usuario
+    // search formulario usuario
     /**
      * comprueba todos los campos editables del formulario search
      * @returns {ResultadoSubmit} true si todos los campos son correctos o un objeto con los errores
@@ -279,7 +279,7 @@ class usuario extends AbstractEntidad {
         return result;
     }
 
-    // HTML del formulario de usuario. Cada acción lo adapta en createForm_ACCION.
+    // html del formulario de usuario. Cada acción lo adapta en createForm_ACCION
     /**
      * devuelve el html común que cada acción adapta antes de mostrar el formulario
      * @returns {string} plantilla html sin insertar todavía en el documento
@@ -322,7 +322,7 @@ class usuario extends AbstractEntidad {
         return values;
     }
 
-    // ADD usuario
+    // add usuario
     /**
      * prepara el formulario de alta con sus campos y referencias
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -340,7 +340,7 @@ class usuario extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // EDIT usuario
+    // edit usuario
     /**
      * rellena el formulario de edición y bloquea las claves que no se modifican
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -405,7 +405,7 @@ class usuario extends AbstractEntidad {
         }
     }
 
-    // SEARCH usuario
+    // search usuario
     /**
      * prepara el formulario de búsqueda con criterios parciales o vacíos
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -423,7 +423,7 @@ class usuario extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // DELETE usuario
+    // delete usuario
     /**
      * muestra los datos bloqueados y prepara la confirmación de borrado
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
@@ -441,7 +441,7 @@ class usuario extends AbstractEntidad {
         return entity_ui.finishForm(this, context);
     }
 
-    // SHOWCURRENT usuario
+    // showcurrent usuario
     /**
      * muestra los datos bloqueados sin ofrecer una operación de envío
      * @param {RegistroEntidad} [fila={}] - valores originales de la fila seleccionada; vacío para una nueva entrada
